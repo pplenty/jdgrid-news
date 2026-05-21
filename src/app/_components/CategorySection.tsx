@@ -7,17 +7,7 @@ import { CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
 import type { Article } from '@/lib/types';
 
 import { ArticleCard } from './ArticleCard';
-
-const CATEGORY_EMOJI: Record<CategoryId, string> = {
-  top: '⭐',
-  world: '🌍',
-  politics: '🏛',
-  business: '💼',
-  tech: '🤖',
-  science: '🧪',
-  sports: '⚽',
-  culture: '🎭',
-};
+import { CATEGORY_ICONS } from './categoryIcons';
 
 type Props = {
   id: CategoryId;
@@ -28,11 +18,12 @@ type Props = {
 export function CategorySection({ id, items, limit = 4 }: Props) {
   if (items.length === 0) return null;
   const slice = items.slice(0, limit);
+  const Icon = CATEGORY_ICONS[id];
   return (
     <section className="border-b border-border-subtle px-4 py-8 lg:px-8">
       <header className="mb-4 flex items-end justify-between gap-3">
-        <h2 className="flex items-baseline gap-2 text-xl font-bold tracking-tight">
-          <span aria-hidden>{CATEGORY_EMOJI[id]}</span>
+        <h2 className="flex items-baseline gap-2.5 text-xl font-bold tracking-tight">
+          <Icon size={18} className="self-center text-fg-muted" aria-hidden />
           <span>{CATEGORY_LABELS[id].ko}</span>
           <span className="text-sm font-normal text-fg-subtle">{CATEGORY_LABELS[id].en}</span>
         </h2>
