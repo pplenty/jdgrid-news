@@ -1,0 +1,7 @@
+# pnpm 11+ settings container (ADR-0011: 단일 패키지지만 settings는 여기로 이관).
+# workspace packages 필드는 비워 둠 (모노레포 아님).
+
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-05-21T16:19:38.597Z",
+  "date": "2026-05-21",
+  "categories": [
+    {
+      "id": "top",
+      "label": {
+        "ko": "종합",
+        "en": "Top"
+      },
+      "items": []
+    },
+    {
+      "id": "world",
+      "label": {
+        "ko": "세계",
+        "en": "World"
+      },
+      "items": []
+    },
+    {
+      "id": "politics",
+      "label": {
+        "ko": "정치",
+        "en": "Politics"
+      },
+      "items": []
+    },
+    {
+      "id": "business",
+      "label": {
+        "ko": "경제",
+        "en": "Business"
+      },
+      "items": []
+    },
+    {
+      "id": "tech",
+      "label": {
+        "ko": "기술",
+        "en": "Tech"
+      },
+      "items": []
+    },
+    {
+      "id": "science",
+      "label": {
+        "ko": "과학",
+        "en": "Science"
+      },
+      "items": []
+    },
+    {
+      "id": "sports",
+      "label": {
+        "ko": "스포츠",
+        "en": "Sports"
+      },
+      "items": []
+    },
+    {
+      "id": "culture",
+      "label": {
+        "ko": "문화",
+        "en": "Culture"
+      },
+      "items": []
+    }
+  ],
+  "trends": {
+    "global": [],
+    "kr": []
+  }
+}
