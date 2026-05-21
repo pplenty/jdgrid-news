@@ -8,6 +8,7 @@ import { Hash, LayoutGrid, TrendingUp, X } from 'lucide-react';
 
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
 import type { SidebarData } from '@/lib/data';
+import type { Trend } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { CATEGORY_ICONS } from './categoryIcons';
@@ -167,7 +168,7 @@ function TrendBlock({
   onNavigate,
 }: {
   label: string;
-  trends: { keyword: string }[];
+  trends: Trend[];
   onNavigate?: () => void;
 }) {
   if (trends.length === 0) {
@@ -187,13 +188,18 @@ function TrendBlock({
             <Link
               href={`/k/${encodeURIComponent(t.keyword)}/`}
               onClick={onNavigate}
-              className="group flex items-center gap-1.5 truncate rounded-md py-0.5 text-sm text-fg-muted hover:text-fg"
+              className="group flex items-center gap-1.5 rounded-md py-0.5 text-sm text-fg-muted hover:text-fg"
             >
-              <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded text-[10px] font-semibold tabular-nums text-fg-subtle group-hover:text-fg-muted">
+              <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-[10px] font-semibold tabular-nums text-fg-subtle group-hover:text-fg-muted">
                 {idx + 1}
               </span>
               <Hash size={11} className="shrink-0 text-fg-subtle" />
-              <span className="truncate">{t.keyword}</span>
+              <span className="min-w-0 flex-1 truncate">{t.keyword}</span>
+              {t.traffic && (
+                <span className="shrink-0 text-[10px] tabular-nums text-fg-subtle">
+                  {t.traffic}
+                </span>
+              )}
             </Link>
           </li>
         ))}

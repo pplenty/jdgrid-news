@@ -60,6 +60,11 @@ export function getCategoryItems(snapshot: DailySnapshot, id: CategoryId): Artic
   return snapshot.categories.find((c) => c.id === id)?.items ?? [];
 }
 
+export function findTrendByKeyword(snapshot: DailySnapshot, keyword: string): Trend | undefined {
+  const needle = keyword.trim();
+  return [...snapshot.trends.kr, ...snapshot.trends.global].find((t) => t.keyword === needle);
+}
+
 export function findArticlesByKeyword(snapshot: DailySnapshot, keyword: string): Article[] {
   const needle = keyword.toLowerCase().trim();
   if (!needle) return [];
