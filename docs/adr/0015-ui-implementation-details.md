@@ -33,8 +33,12 @@
 
 - `lucide-react` 패키지(MIT, tree-shakable).
 - 사용 아이콘만 import → 번들에 필요한 SVG만 포함 (~5kb 추가).
-- 사이드바 카테고리는 텍스트 라벨만 + 액티브 인디케이터(좌측 라인). 카테고리별 아이콘은 v2 이후 검토.
+- **사이드바 카테고리에도 카테고리별 아이콘 적용** (2026-05-22 운영자 피드백 반영, v2 → v1으로 당김).
+  - top → Star, world → Globe, politics → Landmark, business → Briefcase,
+    tech → Cpu, science → FlaskConical, sports → Trophy, culture → Palette.
+  - 매핑은 `src/app/_components/categoryIcons.ts` 에 단일 출처.
 - 시스템 표지 아이콘은 lucide 표준 사용 (Sun, Moon, Monitor, Menu, X, ArrowRight, ExternalLink 등).
+- 브랜드 아이콘(GitHub 등)은 lucide v1에서 제거되어 `_components/icons.tsx` 에 inline SVG로 별도 유지.
 
 ### 카드 썸네일 — 16:9
 
