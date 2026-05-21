@@ -217,6 +217,7 @@
 - [ADR-0012 — Domain: news.jdgrid.com](./adr/0012-domain.md)
 - [ADR-0013 — RSS Sources v1: 해외 6 + 국내 6](./adr/0013-rss-sources-v1.md)
 - [ADR-0014 — Keyword Extraction v0: 단순 빈도 + 조사 stripping + 정확 매칭](./adr/0014-keyword-extraction-v0.md)
+- [ADR-0015 — UI Implementation Details: Pretendard + lucide-react + 16:9 카드](./adr/0015-ui-implementation-details.md)
 
 ---
 
