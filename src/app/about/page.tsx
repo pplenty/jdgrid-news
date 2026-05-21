@@ -1,14 +1,12 @@
-// About 페이지 — 출처·면책·운영 정보. ADR-0007 §운영 원칙 반영.
+// About 페이지 — 출처·면책·운영·연락처. ADR-0007 운영 원칙.
 
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Mail } from 'lucide-react';
 
 import { SOURCES } from '@/scraper/sources';
 
-import { GithubIcon } from '../_components/icons';
-
 export const metadata = {
-  title: 'About — jdgrid·news',
+  title: 'About — news',
   description: '데이터 출처, 면책, 운영 정보.',
 };
 
@@ -20,8 +18,8 @@ export default function AboutPage() {
       <header className="mb-8 border-b border-border-subtle pb-4">
         <h1 className="text-2xl font-bold tracking-tight">About</h1>
         <p className="mt-2 text-sm text-fg-muted">
-          jdgrid·news는 국내·해외 RSS를 매일 1회 모아 카테고리별 헤드라인과 트렌딩 키워드를 보여주는
-          뉴스 인덱스입니다.
+          news는 국내·해외 RSS를 매일 1회 모아 카테고리별 헤드라인과 트렌딩 키워드를 보여주는 뉴스
+          인덱스입니다.
         </p>
       </header>
 
@@ -31,9 +29,6 @@ export default function AboutPage() {
           이 사이트는 <strong>매체가 RSS에 공개한 헤드라인·짧은 요약·썸네일·출처·원문 링크</strong>만
           노출합니다. 본문 전문은 저장·재게시하지 않으며, 자체 요약을 만들지 않습니다. 모든 기사는
           매체 원문으로 연결되며, 썸네일은 매체 서버에서 직접 로드합니다.
-        </p>
-        <p className="text-sm text-fg-subtle">
-          자세한 정책은 ADR-0007에 정리되어 있습니다 — 본 사이트 운영의 헌법 역할을 합니다.
         </p>
       </section>
 
@@ -61,7 +56,7 @@ export default function AboutPage() {
       </section>
 
       <section className="mt-10 space-y-3">
-        <h2 className="text-lg font-semibold">면책 / 클레임</h2>
+        <h2 className="text-lg font-semibold">면책</h2>
         <p className="text-fg-muted">
           기사 본문·이미지의 저작권은 각 매체에 있습니다. 매체로부터 RSS 제거·이미지 핫링크 중단
           요청을 받으면 해당 매체의 소스를 즉시 제거합니다.
@@ -71,18 +66,21 @@ export default function AboutPage() {
       <section className="mt-10 space-y-3">
         <h2 className="text-lg font-semibold">운영</h2>
         <p className="text-fg-muted">
-          매일 KST 06:00에 GitHub Actions가 RSS를 수집해 정적 사이트를 다시 빌드합니다.
+          매일 KST 06:00에 RSS를 수집해 정적 사이트를 다시 빌드합니다. 운영 비용은 0이며 1인이
+          유지합니다.
         </p>
+      </section>
+
+      <section className="mt-10 space-y-3">
+        <h2 className="text-lg font-semibold">Contact</h2>
         <p className="flex items-center gap-2 text-sm">
-          <GithubIcon size={14} />
-          <a
-            href="https://github.com/pplenty/jdgrid-news"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="text-fg-muted hover:text-fg"
-          >
-            github.com/pplenty/jdgrid-news
+          <Mail size={14} className="text-fg-subtle" />
+          <a href="mailto:support@jdgrid.com" className="text-fg-muted hover:text-fg">
+            support@jdgrid.com
           </a>
+        </p>
+        <p className="text-xs text-fg-subtle">
+          매체 클레임·운영 문의·오탈자 제보는 위 이메일로 보내주세요.
         </p>
       </section>
 
