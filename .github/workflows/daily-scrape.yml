@@ -1,0 +1,63 @@
+# 매일 1회 RSS 수집 → data/ 커밋. ADR-0006 + ADR-0004.
+# Cloudflare Pages가 main push를 감지하면 자동 재빌드(ADR-0003).
+
+name: Daily Scrape
+
+on:
+  schedule:
+    # UTC 21:00 = KST 06:00. (ADR-0006)
+    # GitHub Actions cron은 수 분~수십 분 지연이 흔하다 — 단일 시각만 두고 다음 날로 흡수.
+    - cron: '0 21 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    name: Scrape and commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # write 권한으로 push까지 가야 하므로 default token 사용.
+          persist-credentials: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run scraper
+        run: pnpm scrape
+        env:
+          TZ: Asia/Seoul
+
+      - name: Commit data changes
+        run: |
+          if [[ -z "$(git status --porcelain data/)" ]]; then
+            echo "No changes in data/ — skipping commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          DATE=$(TZ=Asia/Seoul date +%Y-%m-%d)
+          git add data/
+          git commit -m "chore(data): ${DATE} scrape"
+          git push origin HEAD:${GITHUB_REF_NAME}

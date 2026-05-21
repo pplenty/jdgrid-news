@@ -264,7 +264,8 @@
 
 ## 10. 다음 액션
 
-1. **M0 스캐폴딩 시작** — Next.js 15 + pnpm + Tailwind 초기화, `src/` 구조([ADR-0011](./adr/0011-repo-structure.md)) 설정, Cloudflare Pages에 `news.jdgrid.com` 연결([ADR-0012](./adr/0012-domain.md)).
-2. **M1 직전 결정 묶음** — RSS 소스 마스터 리스트, 국내 RSS → 우리 카테고리 매핑 룰, 키워드 추출 v0 알고리즘.
-3. **M3 UI 구현 시 결정** — 폰트(Pretendard vs Inter+Noto Sans KR), 카드 디자인 디테일, 빈 상태·404 페이지.
-4. **운영 정착 후 결정** — About 본문, SEO 메타데이터, 모니터링, 저작권 클레임 매뉴얼.
+1. **M0 ✓** — 첫 커밋 `8d9a97a` (35 files). 로컬 빌드/scrape 검증 완료. 남은 운영자 작업: `git push` + Cloudflare Pages 연결([ADR-0012](./adr/0012-domain.md)).
+2. **M2 자동화 ✓ (워크플로우만)** — `.github/workflows/daily-scrape.yml` 작성([ADR-0006](./adr/0006-scheduling-github-actions-cron.md)). push 후 GitHub Actions 탭에서 `workflow_dispatch`로 1차 검증.
+3. **M1 수집 파이프라인 구현** — `src/scraper/sources.ts`에 RSS URL 채우기([ADR-0013](./adr/0013-rss-sources-v1.md)), `src/scraper/index.ts` 본격 구현 (RSS fetch, 정규화, dedupe, 분류, 키워드 추출([ADR-0014](./adr/0014-keyword-extraction-v0.md)), `data/*.json` 쓰기).
+4. **M3 UI 구현 시 결정** — 폰트(Pretendard vs Inter+Noto Sans KR), 카드 디자인 디테일, 빈 상태·404 페이지.
+5. **운영 정착 후 결정** — About 본문, SEO 메타데이터, 모니터링, 저작권 클레임 매뉴얼.
