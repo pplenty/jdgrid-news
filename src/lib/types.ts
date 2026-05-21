@@ -29,11 +29,30 @@ export type CategoryBucket = {
   items: Article[];
 };
 
+export type GoogleNewsItem = {
+  title: string;
+  url: string;
+  /** 매체명 (Google이 표기해 줌). */
+  source: string;
+  /** Google CDN 핫링크 (자체 저장 금지, ADR-0007). */
+  picture?: string;
+};
+
 export type Trend = {
   keyword: string;
-  /** 0~1 정규화된 강도. */
+  /** 0~1 정규화된 강도. derived는 count 비율, google은 traffic 추정. */
   score: number;
-  /** 해당 키워드가 매칭된 오늘자 기사 URL 목록. */
+  /** 신호 출처 (ADR-0016). */
+  source: 'google' | 'derived';
+  /** Google 제공 대략적 검색량 (예: "200K+", "1M+"). source === 'google'에서만. */
+  traffic?: string;
+  /** 트렌드 대표 이미지 URL (Google CDN). */
+  picture?: string;
+  /** 짧은 컨텍스트/관련 검색어 (Google description). */
+  description?: string;
+  /** Google이 큐레이션한 관련 기사 (ht:news_item). */
+  googleArticles?: GoogleNewsItem[];
+  /** 우리가 정확 매칭한 우리 수집 기사 URL (ADR-0014). */
   relatedUrls: string[];
 };
 

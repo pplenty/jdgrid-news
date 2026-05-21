@@ -19,6 +19,7 @@ import { cleanText, formatDateKst, idFromUrl, normalizeIsoDate } from '@/lib/nor
 import type { Article, CategoryBucket, DailySnapshot, Trend } from '@/lib/types';
 
 import { dedupeArticles } from './dedupe';
+import { fetchGoogleTrends } from './google-trends';
 import { extractDerivedKeywords, matchArticles } from './keywords';
 import { SOURCES, type Source } from './sources';
 
@@ -154,30 +155,12 @@ function aggregateTop(buckets: Map<CategoryId, Article[]>): Article[] {
   return out;
 }
 
-async function fetchGoogleTrends(geo: 'KR' | 'US'): Promise<Trend[]> {
-  const url = `https://trends.google.com/trending/rss?geo=${geo}`;
-  try {
-    const feed = await parser.parseURL(url);
-    return (feed.items ?? [])
-      .slice(0, TREND_TOP_N)
-      .map((item): Trend => ({
-        keyword: cleanText(item.title),
-        score: 1,
-        relatedUrls: [],
-      }))
-      .filter((t) => t.keyword);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] google trends ${geo} failed: ${msg}`);
-    return [];
-  }
-}
-
 function derivedToTrend(derived: Array<{ keyword: string; count: number }>): Trend[] {
   const maxCount = derived[0]?.count ?? 1;
   return derived.map(({ keyword, count }) => ({
     keyword,
     score: maxCount > 0 ? count / maxCount : 0,
+    source: 'derived',
     relatedUrls: [],
   }));
 }
@@ -201,8 +184,7 @@ function matchTrendsToArticles(
   articles: ReadonlyArray<Article>,
 ): Trend[] {
   return trends.map((t) => ({
-    keyword: t.keyword,
-    score: t.score,
+    ...t,
     relatedUrls: matchArticles(t.keyword, articles),
   }));
 }
