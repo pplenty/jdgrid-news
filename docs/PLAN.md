@@ -223,6 +223,7 @@
 - [ADR-0018 — Trend Source Fallback: 자체 분류 + Wikipedia Pageviews (ADR-0017 보완)](./adr/0018-trend-fallback-self-categorize-wikipedia.md)
 - [ADR-0019 — Wikipedia Sparkline: top 10 7일 historical](./adr/0019-wikipedia-sparkline.md)
 - [ADR-0020 — Naver DataLab Shopping: 분야별 + 큐레이션 키워드 트렌드](./adr/0020-naver-datalab-shopping.md)
+- [ADR-0021 — Main Page Re-balance: 트렌드를 hero 영역으로](./adr/0021-trend-as-main-hero.md)
 
 ---
 
