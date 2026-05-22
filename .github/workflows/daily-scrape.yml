@@ -48,6 +48,9 @@ jobs:
         run: pnpm scrape
         env:
           TZ: Asia/Seoul
+          # ADR-0020: Naver DataLab — Secrets에 등록 안 됐으면 자동 graceful skip.
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
 
       - name: Commit data changes
         run: |
