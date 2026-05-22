@@ -18,8 +18,8 @@
   --color-fg-subtle: 113 113 122;
   --color-border: 229 229 231;
   --color-border-subtle: 239 239 239;
-  --color-accent: 59 130 246;
-  --color-accent-subtle: 219 234 254;
+  --color-accent: 79 70 229;
+  --color-accent-subtle: 224 231 255;
 }
 
 html.dark {
@@ -33,8 +33,8 @@ html.dark {
   --color-fg-subtle: 113 113 122;
   --color-border: 39 39 42;
   --color-border-subtle: 28 28 32;
-  --color-accent: 96 165 250;
-  --color-accent-subtle: 30 58 138;
+  --color-accent: 129 140 248;
+  --color-accent-subtle: 49 46 129;
 }
 
 html {

@@ -1,4 +1,42 @@
-// lucide-react v1에서 제거된 브랜드 아이콘은 inline SVG로 유지.
+// lucide-react v1에서 제거된 브랜드 아이콘 + 사이트 브랜드 마크는 inline SVG로 유지.
+
+/**
+ * trends 브랜드 마크 — 별자리(constellation) 모티프.
+ * ADR-0022: 점 4개를 연결한 단순 별자리. currentColor 사용해 라이트/다크 자연 대응.
+ */
+export function ConstellationMark({
+  size = 18,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+    >
+      {/* 연결선 — currentColor opacity 낮춤 */}
+      <path
+        d="M5 6 L11 11 L18 4 M11 11 L15 18"
+        stroke="currentColor"
+        strokeOpacity="0.35"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* 점(별) 4개 */}
+      <circle cx="5" cy="6" r="1.8" fill="currentColor" />
+      <circle cx="11" cy="11" r="2.4" fill="currentColor" />
+      <circle cx="18" cy="4" r="1.6" fill="currentColor" />
+      <circle cx="15" cy="18" r="2" fill="currentColor" />
+    </svg>
+  );
+}
 
 export function GithubIcon({ size = 14, className }: { size?: number; className?: string }) {
   return (

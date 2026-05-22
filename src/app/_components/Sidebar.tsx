@@ -12,6 +12,7 @@ import type { Trend } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { CATEGORY_ICONS } from './categoryIcons';
+import { ConstellationMark } from './icons';
 
 type Props = {
   data: SidebarData;
@@ -41,10 +42,11 @@ export function Sidebar({ data, activeCategory, drawerOpen = false, onClose }: P
           <Link
             href="/"
             onClick={onClose}
-            className="text-base font-bold tracking-tight"
-            aria-label="news 홈"
+            className="flex items-center gap-1.5 text-base font-bold tracking-tight"
+            aria-label="trends 홈"
           >
-            news
+            <ConstellationMark />
+            trends
           </Link>
           <button
             type="button"
@@ -57,7 +59,16 @@ export function Sidebar({ data, activeCategory, drawerOpen = false, onClose }: P
         </div>
 
         <nav className="px-3 pt-4 pb-6">
-          <SectionHeader icon={LayoutGrid}>카테고리</SectionHeader>
+          <div className="flex items-center justify-between">
+            <SectionHeader icon={LayoutGrid}>카테고리</SectionHeader>
+            <Link
+              href="/headlines/"
+              onClick={onClose}
+              className="inline-flex items-center gap-0.5 px-2 text-[10px] font-medium text-fg-subtle hover:text-fg"
+            >
+              Headlines <ArrowRight size={10} />
+            </Link>
+          </div>
           <ul className="mt-2 space-y-0.5">
             {CATEGORY_IDS.map((id) => (
               <li key={id}>

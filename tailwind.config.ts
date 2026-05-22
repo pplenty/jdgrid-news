@@ -46,9 +46,9 @@ const config: Config = {
           subtle: '#efefef',
         },
         accent: {
-          DEFAULT: '#3b82f6',
-          subtle: '#dbeafe',
-          fg: '#1d4ed8',
+          DEFAULT: '#4f46e5',
+          subtle: '#e0e7ff',
+          fg: '#4338ca',
         },
       },
       maxWidth: {
