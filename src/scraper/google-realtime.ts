@@ -7,7 +7,7 @@ import type { CategoryId } from '@/lib/categories';
 import type { TrendArticle, TrendStory } from '@/lib/types';
 
 const BASE_URL = 'https://trends.google.com/trends/api/realtimetrends';
-const USER_AGENT = 'jdgrid-news/0.1 (+https://news.jdgrid.com)';
+const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
 const FETCH_TIMEOUT_MS = 15_000;
 const XSSI_PREFIX = ")]}',";
 

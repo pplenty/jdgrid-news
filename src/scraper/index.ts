@@ -25,6 +25,7 @@ import { trendsToInferredStories } from './auto-categorize';
 import { dedupeArticles } from './dedupe';
 import { fetchRealtimeStoriesByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
+import { fetchItunesKorea } from './itunes';
 import { extractDerivedKeywords, matchArticles } from './keywords';
 import { fetchNaverCategoryTrends, fetchNaverKeywordsByCategory } from './naver-datalab';
 import { SOURCES, type Source } from './sources';
@@ -35,7 +36,7 @@ const TOP_PER_CATEGORY = 12;
 const TOP_AGGREGATE = 8;
 const TREND_TOP_N = 20;
 const FETCH_TIMEOUT_MS = 15_000;
-const USER_AGENT = 'jdgrid-news/0.1 (+https://news.jdgrid.com)';
+const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
 
 const DATA_DIR = resolve(process.cwd(), 'data');
 
@@ -265,6 +266,7 @@ async function main(): Promise<void> {
     wikiEn,
     naverCategoryTrends,
     naverKeywords,
+    itunes,
   ] = await Promise.all([
     fetchGoogleTrends('KR'),
     fetchGoogleTrends('US'),
@@ -274,6 +276,7 @@ async function main(): Promise<void> {
     fetchWikipediaTop('en.wikipedia'),
     fetchNaverCategoryTrends(),
     fetchNaverKeywordsByCategory(),
+    fetchItunesKorea(),
   ]);
 
   // 8. Daily 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
@@ -293,6 +296,7 @@ async function main(): Promise<void> {
   const hasStories = storiesKr.length > 0 || storiesGlobal.length > 0;
   const hasWiki = wikiKo.length > 0 || wikiEn.length > 0;
   const hasNaver = naverCategoryTrends.length > 0 || Object.keys(naverKeywords).length > 0;
+  const hasItunes = itunes.music.length > 0 || itunes.apps.length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -314,6 +318,7 @@ async function main(): Promise<void> {
           categoryTrends: naverCategoryTrends,
         },
       }),
+      ...(hasItunes && { itunes }),
     },
   };
 

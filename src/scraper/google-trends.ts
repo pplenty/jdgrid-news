@@ -8,7 +8,7 @@ import { cleanText } from '@/lib/normalize';
 import type { GoogleNewsItem, Trend } from '@/lib/types';
 
 const TRENDS_URL = 'https://trends.google.com/trending/rss';
-const USER_AGENT = 'jdgrid-news/0.1 (+https://news.jdgrid.com)';
+const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
 const FETCH_TIMEOUT_MS = 15_000;
 
 type RawNewsItem = {

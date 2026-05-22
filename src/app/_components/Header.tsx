@@ -28,7 +28,7 @@ export function Header({ date, onOpenDrawer }: Props) {
           <Menu size={20} />
         </button>
         <Link href="/" className="text-base font-bold tracking-tight lg:hidden">
-          news
+          trends
         </Link>
       </div>
 

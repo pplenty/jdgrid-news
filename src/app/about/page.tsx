@@ -6,7 +6,7 @@ import { ExternalLink, Mail } from 'lucide-react';
 import { SOURCES } from '@/scraper/sources';
 
 export const metadata = {
-  title: 'About — news',
+  title: 'About — trends',
   description: '데이터 출처, 면책, 운영 정보.',
 };
 
@@ -18,8 +18,8 @@ export default function AboutPage() {
       <header className="mb-8 border-b border-border-subtle pb-4">
         <h1 className="text-2xl font-bold tracking-tight">About</h1>
         <p className="mt-2 text-sm text-fg-muted">
-          news는 국내·해외 RSS를 매일 1회 모아 카테고리별 헤드라인과 트렌딩 키워드를 보여주는 뉴스
-          인덱스입니다.
+          trends는 국내·해외 검색·뉴스·지식·쇼핑·문화 트렌드를 매일 모아 한 페이지에서 보여주는
+          트렌드 대시보드입니다.
         </p>
       </header>
 

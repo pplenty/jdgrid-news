@@ -2,7 +2,7 @@
   "name": "jdgrid-news",
   "version": "0.0.1",
   "private": true,
-  "description": "Daily news index — categorized headlines + trending keywords. https://news.jdgrid.com",
+  "description": "Daily trends dashboard — search·news·knowledge·shopping·culture. https://trends.jdgrid.com",
   "engines": {
     "node": ">=22.0.0"
   },

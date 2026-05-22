@@ -7,7 +7,7 @@ import type { HistoryPoint, WikiTrend } from '@/lib/types';
 const BASE_URL = 'https://wikimedia.org/api/rest_v1/metrics/pageviews/top';
 const PER_ARTICLE_URL =
   'https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article';
-const USER_AGENT = 'jdgrid-news/0.1 (mailto:support@jdgrid.com)';
+const USER_AGENT = 'jdgrid-trends/0.1 (mailto:support@jdgrid.com)';
 const FETCH_TIMEOUT_MS = 15_000;
 const HISTORY_DAYS = 7;
 const HISTORY_TOP_N = 10;
