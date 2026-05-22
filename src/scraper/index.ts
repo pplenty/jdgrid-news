@@ -19,6 +19,7 @@ import { cleanText, formatDateKst, idFromUrl, normalizeIsoDate } from '@/lib/nor
 import type { Article, CategoryBucket, DailySnapshot, Trend } from '@/lib/types';
 
 import { dedupeArticles } from './dedupe';
+import { fetchRealtimeTrendsByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
 import { extractDerivedKeywords, matchArticles } from './keywords';
 import { SOURCES, type Source } from './sources';
@@ -234,10 +235,12 @@ async function main(): Promise<void> {
   const derivedKr = extractDerivedKeywords(koArticles, TREND_TOP_N);
   const derivedGlobal = extractDerivedKeywords(enArticles, TREND_TOP_N);
 
-  // 7. Google Trends RSS (병렬)
-  const [googleKr, googleGlobal] = await Promise.all([
+  // 7. Google Trends RSS Daily + Realtime API (병렬)
+  const [googleKr, googleGlobal, realtimeKr, realtimeGlobal] = await Promise.all([
     fetchGoogleTrends('KR'),
     fetchGoogleTrends('US'),
+    fetchRealtimeTrendsByGeo('KR'),
+    fetchRealtimeTrendsByGeo('global'),
   ]);
 
   // 8. 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
@@ -248,6 +251,7 @@ async function main(): Promise<void> {
 
   // 9. snapshot 작성
   const now = new Date();
+  const hasRealtime = realtimeKr.length > 0 || realtimeGlobal.length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -258,15 +262,20 @@ async function main(): Promise<void> {
         items: buckets.get(id) ?? [],
       }),
     ),
-    trends: { global: trendsGlobal, kr: trendsKr },
+    trends: {
+      global: trendsGlobal,
+      kr: trendsKr,
+      ...(hasRealtime && { realtime: { kr: realtimeKr, global: realtimeGlobal } }),
+    },
   };
 
   writeSnapshot(snapshot);
 
   const ms = Date.now() - startedAt;
   const trendsCount = trendsKr.length + trendsGlobal.length;
+  const realtimeCount = realtimeKr.length + realtimeGlobal.length;
   console.log(
-    `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} trends (kr ${trendsKr.length} + global ${trendsGlobal.length}) in ${ms}ms`,
+    `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} daily trends, ${realtimeCount} realtime stories in ${ms}ms`,
   );
 }
 

@@ -56,6 +56,37 @@ export type Trend = {
   relatedUrls: string[];
 };
 
+export type RealtimeCategory =
+  | 'top_stories'
+  | 'business'
+  | 'entertainment'
+  | 'health'
+  | 'sci_tech'
+  | 'sports';
+
+export type RealtimeArticle = {
+  title: string;
+  url: string;
+  source: string;
+  imageUrl?: string;
+  publishedAt?: string;
+  /** Google이 짧게 발췌해 큐레이션한 인용 (ADR-0007 정합 — 매체가 RSS에 노출한 수준의 짧은 발췌). */
+  snippet?: string;
+};
+
+export type RealtimeTrendStory = {
+  /** Story 제목 (뉴스 토픽 클러스터 라벨). */
+  title: string;
+  /** 관련 엔티티 (인물·장소·물건). Google이 추출. */
+  entityNames: string[];
+  imageUrl?: string;
+  /** Google Trends story URL. */
+  shareUrl?: string;
+  category: RealtimeCategory;
+  geo: 'KR' | 'global';
+  articles: RealtimeArticle[];
+};
+
 export type DailySnapshot = {
   /** 스크래퍼 실행 시각 (ISO 8601). */
   generatedAt: string;
@@ -65,5 +96,10 @@ export type DailySnapshot = {
   trends: {
     global: Trend[];
     kr: Trend[];
+    /** ADR-0017: Google realtime trends API 카테고리별. */
+    realtime?: {
+      kr: RealtimeTrendStory[];
+      global: RealtimeTrendStory[];
+    };
   };
 };
