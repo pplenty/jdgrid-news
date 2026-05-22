@@ -71,7 +71,7 @@
             "name": "BBC News",
             "url": "https://www.bbc.com/news"
           },
-          "publishedAt": "2026-05-21T21:53:53.000Z",
+          "publishedAt": "2026-05-22T05:01:57.000Z",
           "lang": "en",
           "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/555b/live/3e3ed530-5517-11f1-89a3-d1f559421220.png",
           "category": "science"
@@ -556,8 +556,8 @@
           "summary": "Australia’s weak employment report has sparked an increase in curve-steepening trades as investors bet the central bank is nearing the end of its interest-rate hiking cycle, according to traders.",
           "url": "https://www.bloomberg.com/news/articles/2026-05-22/traders-bet-on-rba-pause-with-rise-in-curve-steepening-trades",
           "source": {
-            "name": "Bloomberg",
-            "url": "https://www.bloomberg.com"
+            "name": "조선일보",
+            "url": "https://www.chosun.com"
           },
           "publishedAt": "2026-05-22T04:03:22.000Z",
           "lang": "en",
@@ -817,7 +817,7 @@
             "name": "BBC News",
             "url": "https://www.bbc.com/news"
           },
-          "publishedAt": "2026-05-21T21:53:53.000Z",
+          "publishedAt": "2026-05-22T05:01:57.000Z",
           "lang": "en",
           "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/555b/live/3e3ed530-5517-11f1-89a3-d1f559421220.png",
           "category": "science"
@@ -3376,7 +3376,7 @@
           "https://www.yna.co.kr/view/AKR20260522067500062",
           "https://www.yna.co.kr/view/AKR20260522040800001",
           "https://www.yna.co.kr/view/AKR20260521170100001",
-          "https://www.yna.co.kr/view/AKR20260521148700061",
+          "https://www.yna.co.kr/view/AKR20260521157851530",
           "https://www.yna.co.kr/view/AKR20260522035100017",
           "https://www.yna.co.kr/view/AKR20260521157800530",
           "https://www.yna.co.kr/view/AKR20260521136500017",
@@ -4436,7 +4436,7 @@
         },
         {
           "title": "elon",
-          "category": "business",
+          "category": "culture",
           "geo": "global",
           "source": "inferred",
           "articles": [
