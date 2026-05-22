@@ -16,13 +16,15 @@ import {
   type CategoryId,
 } from '@/lib/categories';
 import { cleanText, formatDateKst, idFromUrl, normalizeIsoDate } from '@/lib/normalize';
-import type { Article, CategoryBucket, DailySnapshot, Trend } from '@/lib/types';
+import type { Article, CategoryBucket, DailySnapshot, Trend, TrendStory } from '@/lib/types';
 
+import { trendsToInferredStories } from './auto-categorize';
 import { dedupeArticles } from './dedupe';
-import { fetchRealtimeTrendsByGeo } from './google-realtime';
+import { fetchRealtimeStoriesByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
 import { extractDerivedKeywords, matchArticles } from './keywords';
 import { SOURCES, type Source } from './sources';
+import { fetchWikipediaTop } from './wikipedia';
 
 // ── 튜닝 상수 (운영 튜닝 영역) ──────────────────────────────────────────
 const TOP_PER_CATEGORY = 12;
@@ -180,6 +182,19 @@ function mergeTrends(primary: Trend[], secondary: Trend[], cap: number): Trend[]
   return out;
 }
 
+/** realtime 스토리가 있으면 우선, 자체 분류는 같은 (category, title) 중복 제거 후 보충. ADR-0018. */
+function mergeStories(realtime: TrendStory[], inferred: TrendStory[]): TrendStory[] {
+  const out: TrendStory[] = [...realtime];
+  const seen = new Set(realtime.map((s) => `${s.category}|${s.title.toLowerCase().trim()}`));
+  for (const s of inferred) {
+    const key = `${s.category}|${s.title.toLowerCase().trim()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
+  return out;
+}
+
 function matchTrendsToArticles(
   trends: ReadonlyArray<Trend>,
   articles: ReadonlyArray<Article>,
@@ -235,23 +250,33 @@ async function main(): Promise<void> {
   const derivedKr = extractDerivedKeywords(koArticles, TREND_TOP_N);
   const derivedGlobal = extractDerivedKeywords(enArticles, TREND_TOP_N);
 
-  // 7. Google Trends RSS Daily + Realtime API (병렬)
-  const [googleKr, googleGlobal, realtimeKr, realtimeGlobal] = await Promise.all([
+  // 7. 외부 신호 병렬 fetch: Google Daily RSS, Google realtime API(현재 404),
+  //    Wikipedia Pageviews 한·영 (ADR-0018)
+  const [googleKr, googleGlobal, realtimeKr, realtimeGlobal, wikiKo, wikiEn] = await Promise.all([
     fetchGoogleTrends('KR'),
     fetchGoogleTrends('US'),
-    fetchRealtimeTrendsByGeo('KR'),
-    fetchRealtimeTrendsByGeo('global'),
+    fetchRealtimeStoriesByGeo('KR'),
+    fetchRealtimeStoriesByGeo('global'),
+    fetchWikipediaTop('ko.wikipedia'),
+    fetchWikipediaTop('en.wikipedia'),
   ]);
 
-  // 8. 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
+  // 8. Daily 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
   const mergedKr = mergeTrends(googleKr, derivedToTrend(derivedKr), TREND_TOP_N);
   const mergedGlobal = mergeTrends(googleGlobal, derivedToTrend(derivedGlobal), TREND_TOP_N);
   const trendsKr = matchTrendsToArticles(mergedKr, deduped);
   const trendsGlobal = matchTrendsToArticles(mergedGlobal, deduped);
 
-  // 9. snapshot 작성
+  // 9. trend stories — Google realtime(있으면) + 자체 분류(보완). ADR-0018
+  const inferredKr = trendsToInferredStories(trendsKr, deduped, 'KR');
+  const inferredGlobal = trendsToInferredStories(trendsGlobal, deduped, 'global');
+  const storiesKr = mergeStories(realtimeKr, inferredKr);
+  const storiesGlobal = mergeStories(realtimeGlobal, inferredGlobal);
+
+  // 10. snapshot 작성
   const now = new Date();
-  const hasRealtime = realtimeKr.length > 0 || realtimeGlobal.length > 0;
+  const hasStories = storiesKr.length > 0 || storiesGlobal.length > 0;
+  const hasWiki = wikiKo.length > 0 || wikiEn.length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -265,7 +290,8 @@ async function main(): Promise<void> {
     trends: {
       global: trendsGlobal,
       kr: trendsKr,
-      ...(hasRealtime && { realtime: { kr: realtimeKr, global: realtimeGlobal } }),
+      ...(hasStories && { stories: { kr: storiesKr, global: storiesGlobal } }),
+      ...(hasWiki && { wikipedia: { ko: wikiKo, en: wikiEn } }),
     },
   };
 
@@ -273,9 +299,10 @@ async function main(): Promise<void> {
 
   const ms = Date.now() - startedAt;
   const trendsCount = trendsKr.length + trendsGlobal.length;
-  const realtimeCount = realtimeKr.length + realtimeGlobal.length;
+  const storiesCount = storiesKr.length + storiesGlobal.length;
+  const wikiCount = wikiKo.length + wikiEn.length;
   console.log(
-    `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} daily trends, ${realtimeCount} realtime stories in ${ms}ms`,
+    `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} daily trends, ${storiesCount} stories (realtime ${realtimeKr.length + realtimeGlobal.length} / inferred ${inferredKr.length + inferredGlobal.length}), ${wikiCount} wiki entries in ${ms}ms`,
   );
 }
 
