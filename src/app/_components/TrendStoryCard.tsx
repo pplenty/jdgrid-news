@@ -1,11 +1,11 @@
-// Realtime trend story card — ADR-0017.
+// Trend story card — ADR-0018 (Google realtime + 자체 분류 통합 모델).
 
 import { ExternalLink } from 'lucide-react';
 
-import type { RealtimeArticle, RealtimeTrendStory } from '@/lib/types';
+import type { TrendArticle, TrendStory } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-export function RealtimeStoryCard({ story }: { story: RealtimeTrendStory }) {
+export function TrendStoryCard({ story }: { story: TrendStory }) {
   const lead = story.articles[0];
   const href = lead?.url ?? story.shareUrl ?? '#';
 
@@ -29,7 +29,7 @@ export function RealtimeStoryCard({ story }: { story: RealtimeTrendStory }) {
           <h3 className="font-bold leading-snug tracking-tight line-clamp-3 group-hover:text-accent-fg">
             {story.title}
           </h3>
-          {story.entityNames.length > 0 && (
+          {story.entityNames && story.entityNames.length > 0 && (
             <ul className="flex flex-wrap gap-1">
               {story.entityNames.slice(0, 4).map((name) => (
                 <li
@@ -56,7 +56,7 @@ export function RealtimeStoryCard({ story }: { story: RealtimeTrendStory }) {
   );
 }
 
-function ArticleRow({ article }: { article: RealtimeArticle }) {
+function ArticleRow({ article }: { article: TrendArticle }) {
   return (
     <a
       href={article.url}

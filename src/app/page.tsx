@@ -7,6 +7,7 @@ import { getCategoryItems, loadLatest } from '@/lib/data';
 import { ArticleCard } from './_components/ArticleCard';
 import { CategorySection } from './_components/CategorySection';
 import { TrendingBanner } from './_components/TrendingBanner';
+import { WikipediaSection } from './_components/WikipediaSection';
 
 const DOMAIN_CATEGORIES: ReadonlyArray<Exclude<CategoryId, 'top'>> = CATEGORY_IDS.filter(
   (id): id is Exclude<CategoryId, 'top'> => id !== 'top',
@@ -16,9 +17,13 @@ export default function HomePage() {
   const snapshot = loadLatest();
   const top = getCategoryItems(snapshot, 'top');
 
+  const wiki = snapshot.trends.wikipedia;
+
   return (
     <>
       <TrendingBanner global={snapshot.trends.global} kr={snapshot.trends.kr} />
+
+      {wiki && <WikipediaSection ko={wiki.ko} en={wiki.en} />}
 
       {top.length > 0 && (
         <section className="border-b border-border-subtle px-4 py-8 lg:px-8">
