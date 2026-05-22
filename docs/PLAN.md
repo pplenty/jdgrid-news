@@ -220,6 +220,7 @@
 - [ADR-0015 — UI Implementation Details: Pretendard + lucide-react + 16:9 카드](./adr/0015-ui-implementation-details.md)
 - [ADR-0016 — Trend Enrichment v1: Google RSS ht:news_item + ht:approx_traffic + picture](./adr/0016-trend-enrichment-google.md)
 - [ADR-0017 — Realtime Trends Categories: Google realtime API cat=b/e/m/t/s/h + /trends 페이지](./adr/0017-realtime-trends-categories.md)
+- [ADR-0018 — Trend Source Fallback: 자체 분류 + Wikipedia Pageviews (ADR-0017 보완)](./adr/0018-trend-fallback-self-categorize-wikipedia.md)
 
 ---
 
