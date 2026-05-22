@@ -5,7 +5,7 @@
 - 상태: Draft (v0.1)
 - 작성일: 2026-05-21
 - 저장소: https://github.com/pplenty/jdgrid-news
-- 도메인: https://news.jdgrid.com ([ADR-0012](./adr/0012-domain.md))
+- 도메인: https://trends.jdgrid.com ([ADR-0022](./adr/0022-rebrand-to-trends.md)) — ADR-0012 (`news.jdgrid.com`)의 supersede
 
 ---
 
@@ -224,6 +224,7 @@
 - [ADR-0019 — Wikipedia Sparkline: top 10 7일 historical](./adr/0019-wikipedia-sparkline.md)
 - [ADR-0020 — Naver DataLab Shopping: 분야별 + 큐레이션 키워드 트렌드](./adr/0020-naver-datalab-shopping.md)
 - [ADR-0021 — Main Page Re-balance: 트렌드를 hero 영역으로](./adr/0021-trend-as-main-hero.md)
+- [ADR-0022 — Rebrand to trends: 도메인·정체성·페이지 구조·별자리 모티프](./adr/0022-rebrand-to-trends.md)
 
 ---
 
