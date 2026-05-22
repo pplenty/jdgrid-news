@@ -1,8 +1,8 @@
-// 메인 페이지 hero 영역 — ADR-0021.
-// TrendingBanner의 hero variant: KR/Global top 5 큰 카드 + 강조 톤.
+// 메인 페이지 hero 영역 — ADR-0021 (재디자인).
+// 매거진 레이아웃: TOP 3 큰 정사각 카드 + 4~10위 작은 리스트.
 
 import Link from 'next/link';
-import { ArrowRight, TrendingUp } from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
 
 import type { Trend } from '@/lib/types';
 import { cn, formatDateLabel } from '@/lib/utils';
@@ -19,103 +19,124 @@ export function TrendingHero({ kr, global, date }: Props) {
   return (
     <section
       aria-label="오늘의 트렌드"
-      className="border-b border-border-subtle bg-gradient-to-br from-accent-subtle/30 via-bg to-bg"
+      className="border-b border-border bg-gradient-to-br from-accent-subtle/60 via-accent-subtle/10 to-bg"
     >
-      <div className="px-4 py-8 lg:px-8 lg:py-10">
-        <header className="mb-6 flex flex-wrap items-end gap-x-3 gap-y-1">
-          <h1 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight">
-            <TrendingUp className="text-accent" />
+      <div className="px-4 py-10 lg:px-8 lg:py-14">
+        <header className="mb-8 flex flex-wrap items-end gap-x-4 gap-y-2">
+          <h1 className="flex items-center gap-2.5 text-3xl font-black tracking-tight md:text-4xl">
+            <Flame className="text-accent" size={32} />
             오늘의 트렌드
           </h1>
-          <span className="text-sm text-fg-muted">{formatDateLabel(date)}</span>
+          <span className="text-sm text-fg-muted">
+            {formatDateLabel(date)} · via Google Trends
+          </span>
           <Link
             href="/trends/"
-            className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-accent-fg hover:underline"
+            className="ml-auto inline-flex items-center gap-1 rounded-full border border-border bg-bg px-3 py-1.5 text-sm font-medium text-fg-muted shadow-sm transition-colors hover:border-accent hover:text-accent-fg"
           >
             카테고리별 상세
             <ArrowRight size={14} />
           </Link>
         </header>
 
-        <div className="grid gap-x-6 gap-y-6 lg:grid-cols-2">
-          <TrendColumn label="🇰🇷 한국" trends={kr} />
-          <TrendColumn label="🌐 글로벌" trends={global} />
+        <div className="grid gap-10 lg:grid-cols-2">
+          <GeoBlock label="🇰🇷 한국" trends={kr} />
+          <GeoBlock label="🌐 글로벌" trends={global} />
         </div>
-
-        <p className="mt-6 text-xs text-fg-subtle">
-          via Google Trends · 키워드 클릭 시 매칭된 기사 + Google 큐레이션 외부 기사
-        </p>
       </div>
     </section>
   );
 }
 
-function TrendColumn({ label, trends }: { label: string; trends: Trend[] }) {
+function GeoBlock({ label, trends }: { label: string; trends: Trend[] }) {
   if (trends.length === 0) return null;
+  const tops = trends.slice(0, 3);
+  const rest = trends.slice(3, 10);
   return (
     <div>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">{label}</p>
-      <ol className="space-y-1.5">
-        {trends.slice(0, 5).map((t, idx) => (
-          <li key={t.keyword}>
-            <TrendRow trend={t} rank={idx + 1} />
-          </li>
+      <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-fg-muted">{label}</h2>
+      {/* TOP 3 */}
+      <div className="grid grid-cols-3 gap-3">
+        {tops.map((t, idx) => (
+          <BigCard key={t.keyword} rank={idx + 1} trend={t} />
         ))}
-      </ol>
+      </div>
+      {/* 4~10위 */}
+      {rest.length > 0 && (
+        <ol className="mt-4 space-y-0.5">
+          {rest.map((t, idx) => (
+            <li key={t.keyword}>
+              <SmallRow rank={idx + 4} trend={t} />
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }
 
-function TrendRow({ trend, rank }: { trend: Trend; rank: number }) {
-  const lead = trend.googleArticles?.[0];
-  const subtitle =
-    trend.traffic && lead
-      ? `${trend.traffic} · ${lead.source}`
-      : trend.traffic ?? lead?.source ?? trend.description;
-
+function BigCard({ rank, trend }: { rank: number; trend: Trend }) {
   return (
     <Link
       href={`/k/${encodeURIComponent(trend.keyword)}/`}
-      className="group flex items-center gap-4 rounded-lg border border-transparent px-2 py-2 transition-all hover:border-border-subtle hover:bg-bg"
+      className="group block"
     >
-      <span className="w-6 shrink-0 text-center text-base font-bold tabular-nums text-fg-subtle group-hover:text-accent-fg">
-        {rank}
-      </span>
-      <Thumbnail src={trend.picture} alt={trend.keyword} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-lg font-bold leading-tight text-fg group-hover:text-accent-fg">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-bg-subtle ring-1 ring-border-subtle">
+        {trend.picture ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={trend.picture}
+            alt={trend.keyword}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-3xl font-black text-fg-subtle">
+            {rank}
+          </div>
+        )}
+        <span className="absolute left-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-bg/90 text-sm font-black tabular-nums text-fg shadow-sm">
+          {rank}
+        </span>
+      </div>
+      <div className="mt-2">
+        <p className="line-clamp-2 text-base font-bold leading-tight tracking-tight group-hover:text-accent-fg">
           {trend.keyword}
         </p>
-        {subtitle && <p className="mt-0.5 truncate text-sm text-fg-muted">{subtitle}</p>}
+        <p className="mt-0.5 text-xs text-fg-subtle">
+          {trend.traffic ?? `${trend.relatedUrls.length}건 매칭`}
+          {trend.googleArticles?.[0]?.source && ` · ${trend.googleArticles[0].source}`}
+        </p>
       </div>
-      {trend.relatedUrls.length > 0 && (
-        <span className="shrink-0 rounded-full bg-bg-subtle px-2 py-0.5 text-[11px] font-semibold tabular-nums text-fg-muted">
-          {trend.relatedUrls.length}
-        </span>
-      )}
     </Link>
   );
 }
 
-function Thumbnail({ src, alt }: { src?: string; alt: string }) {
+function SmallRow({ rank, trend }: { rank: number; trend: Trend }) {
   return (
-    <div
+    <Link
+      href={`/k/${encodeURIComponent(trend.keyword)}/`}
       className={cn(
-        'h-12 w-12 shrink-0 overflow-hidden rounded-md bg-bg-subtle',
-        !src && 'border border-border-subtle',
+        'group flex items-center gap-3 rounded-md px-2 py-1.5',
+        'hover:bg-bg/80',
       )}
     >
-      {src && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          className="h-full w-full object-cover"
-        />
+      <span className="w-5 shrink-0 text-center text-sm font-bold tabular-nums text-fg-subtle">
+        {rank}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg group-hover:text-accent-fg">
+        {trend.keyword}
+      </span>
+      {trend.traffic && (
+        <span className="shrink-0 text-xs tabular-nums text-fg-subtle">{trend.traffic}</span>
       )}
-    </div>
+      {trend.relatedUrls.length > 0 && (
+        <span className="shrink-0 rounded-full bg-bg/70 px-1.5 text-[10px] font-semibold tabular-nums text-fg-muted">
+          {trend.relatedUrls.length}
+        </span>
+      )}
+    </Link>
   );
 }
