@@ -4,6 +4,9 @@
 // 관련 ADR: 0004 (저장), 0005 (RSS+Trends), 0006 (cron), 0007 (5필드 정책),
 //          0008 (카테고리·단일 분류·top 자동), 0013 (매체 셋), 0014 (키워드 추출).
 
+// ⚠ 환경변수 로드는 다른 import 전에 — 다른 모듈이 top-level에서 process.env를 읽을 가능성 보호.
+import './load-env';
+
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 

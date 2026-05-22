@@ -15,6 +15,8 @@ const FETCH_TIMEOUT_MS = 15_000;
 const HISTORY_DAYS = 14;
 const TOP_PER_CATEGORY = 6;
 const KEYWORD_CHUNK = 5;
+/** Naver /categories API 제약 — 한 호출당 카테고리 3개 이하. */
+const CATEGORY_CHUNK = 3;
 
 type Credentials = { clientId: string; clientSecret: string };
 
@@ -78,25 +80,31 @@ type CategoriesResponse = {
 export async function fetchNaverCategoryTrends(): Promise<NaverShoppingCategoryTrend[]> {
   const creds = getCredentials();
   if (!creds) return [];
-  const body = {
-    startDate: dateString(HISTORY_DAYS),
-    endDate: dateString(1),
-    timeUnit: 'date',
-    category: NAVER_CATEGORIES.map((c) => ({ name: c.alias, param: [c.code] })),
-  };
-  const json = await naverFetch<CategoriesResponse>('/categories', body, creds);
-  if (!json?.results) return [];
-  return json.results
-    .map((r): NaverShoppingCategoryTrend | null => {
+
+  const out: NaverShoppingCategoryTrend[] = [];
+
+  for (let i = 0; i < NAVER_CATEGORIES.length; i += CATEGORY_CHUNK) {
+    const chunk = NAVER_CATEGORIES.slice(i, i + CATEGORY_CHUNK);
+    const body = {
+      startDate: dateString(HISTORY_DAYS),
+      endDate: dateString(1),
+      timeUnit: 'date',
+      category: chunk.map((c) => ({ name: c.alias, param: [c.code] })),
+    };
+    const json = await naverFetch<CategoriesResponse>('/categories', body, creds);
+    if (!json?.results) continue;
+    for (const r of json.results) {
       const cat = NAVER_CATEGORIES.find((c) => c.alias === r.title);
-      if (!cat) return null;
-      return {
+      if (!cat) continue;
+      out.push({
         category: cat.alias,
         categoryCode: cat.code,
         history: (r.data ?? []).map(toHistoryPoint).filter(isHistoryPoint),
-      };
-    })
-    .filter((c): c is NaverShoppingCategoryTrend => c !== null);
+      });
+    }
+  }
+
+  return out;
 }
 
 // ── 카테고리 내 키워드 트렌드 (카테고리 × 키워드 5씩 chunk 병렬) ────────────

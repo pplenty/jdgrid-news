@@ -117,6 +117,12 @@ trends: {
 - BEST100 같은 HTML 스크래핑은 ADR-0005·0007 정신상 명시적 배제.
 - 큐레이션 키워드는 운영 튜닝 영역 (PR로 조정, ADR 갱신 없이).
 
+## Implementation Notes (운영 발견)
+
+- **`/categories` API는 한 호출당 카테고리 최대 3개** (HTTP 400 `should NOT have more than 3 items`). 우리 카테고리 5개는 **3 + 2** 두 번 호출로 chunk 분할 — `CATEGORY_CHUNK = 3` 상수.
+- 키워드 트렌드 API(`/category/keywords`)는 카테고리 1개씩 호출이라 제약 없음. 키워드 묶음만 5씩 chunk.
+- **`tsx`는 `.env.local`을 자동 로드하지 않는다** — `pnpm add -D dotenv` 후 `src/scraper/load-env.ts` 신설하여 scraper 진입점에서 가장 먼저 import. `.env.local` → `.env` 순서로 로드(있는 경우만, 없으면 silent skip). CI에서는 `${{ secrets.* }}` 가 `env:` 로 inject되므로 dotenv 호출은 빈 동작이고 기존 env가 그대로 사용됨.
+
 ## Alternatives Considered (대안)
 
 - **HTML 스크래핑 (Naver Shopping BEST)**: robots.txt 회색지대 + 정책 변동성 ↑. ADR-0005에서 RSS 공식만 가는 원칙과 충돌.
