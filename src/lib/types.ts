@@ -56,35 +56,41 @@ export type Trend = {
   relatedUrls: string[];
 };
 
-export type RealtimeCategory =
-  | 'top_stories'
-  | 'business'
-  | 'entertainment'
-  | 'health'
-  | 'sci_tech'
-  | 'sports';
-
-export type RealtimeArticle = {
+export type TrendArticle = {
   title: string;
   url: string;
   source: string;
   imageUrl?: string;
   publishedAt?: string;
-  /** Google이 짧게 발췌해 큐레이션한 인용 (ADR-0007 정합 — 매체가 RSS에 노출한 수준의 짧은 발췌). */
+  /** 짧은 인용/스니펫 — 매체가 RSS에 노출한 수준. ADR-0007 정합. */
   snippet?: string;
 };
 
-export type RealtimeTrendStory = {
-  /** Story 제목 (뉴스 토픽 클러스터 라벨). */
+export type TrendStory = {
   title: string;
-  /** 관련 엔티티 (인물·장소·물건). Google이 추출. */
-  entityNames: string[];
+  /** 관련 엔티티 (Google realtime 전용). 자체분류 source는 비어있음. */
+  entityNames?: string[];
   imageUrl?: string;
-  /** Google Trends story URL. */
+  /** Google Trends story URL (있을 경우). */
   shareUrl?: string;
-  category: RealtimeCategory;
+  /** 우리 8 카테고리 (ADR-0008) 기준. */
+  category: CategoryId;
   geo: 'KR' | 'global';
-  articles: RealtimeArticle[];
+  /** ADR-0018: 데이터 출처 — Google realtime API 또는 우리 자체 분류. */
+  source: 'google_realtime' | 'inferred';
+  articles: TrendArticle[];
+};
+
+export type WikiTrend = {
+  /** 위키 문서 제목 (사람이 읽기 좋은 형태, 언더스코어 → 공백). */
+  title: string;
+  /** 어제 조회수. */
+  views: number;
+  /** https://{lang}.wikipedia.org/wiki/{title}. */
+  url: string;
+  /** v1엔 미수집 — page summary API 비용 회피. */
+  thumbnail?: string;
+  description?: string;
 };
 
 export type DailySnapshot = {
@@ -96,10 +102,15 @@ export type DailySnapshot = {
   trends: {
     global: Trend[];
     kr: Trend[];
-    /** ADR-0017: Google realtime trends API 카테고리별. */
-    realtime?: {
-      kr: RealtimeTrendStory[];
-      global: RealtimeTrendStory[];
+    /** ADR-0017+0018: 카테고리별 trend story (Google realtime이 있으면 그것, 없으면 자체 분류). */
+    stories?: {
+      kr: TrendStory[];
+      global: TrendStory[];
+    };
+    /** ADR-0018: Wikipedia Pageviews 어제 top. */
+    wikipedia?: {
+      ko: WikiTrend[];
+      en: WikiTrend[];
     };
   };
 };
