@@ -125,6 +125,11 @@ export type DailySnapshot = {
       keywordsByCategory: Record<string, NaverShoppingKeyword[]>;
       categoryTrends: NaverShoppingCategoryTrend[];
     };
+    /** ADR-0022: Apple iTunes Korea 차트 (음악·앱). */
+    itunes?: {
+      music: ItunesTrend[];
+      apps: ItunesTrend[];
+    };
   };
 };
 
@@ -143,4 +148,16 @@ export type NaverShoppingCategoryTrend = {
   category: string;
   categoryCode: string;
   history: HistoryPoint[];
+};
+
+export type ItunesTrend = {
+  /** 곡/앱 이름. */
+  name: string;
+  /** 음악: artist, 앱: publisher (Apple은 'artistName' 동일 키 사용). */
+  artistName?: string;
+  /** 200x200 또는 100x100 아트워크. */
+  artworkUrl: string;
+  /** music.apple.com / apps.apple.com URL. */
+  url: string;
+  kind: 'song' | 'app';
 };
