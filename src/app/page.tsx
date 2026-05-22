@@ -6,6 +6,7 @@ import { getCategoryItems, loadLatest } from '@/lib/data';
 
 import { ArticleCard } from './_components/ArticleCard';
 import { CategorySection } from './_components/CategorySection';
+import { NaverShoppingSection } from './_components/NaverShoppingSection';
 import { TrendingBanner } from './_components/TrendingBanner';
 import { WikipediaSection } from './_components/WikipediaSection';
 
@@ -18,12 +19,20 @@ export default function HomePage() {
   const top = getCategoryItems(snapshot, 'top');
 
   const wiki = snapshot.trends.wikipedia;
+  const naver = snapshot.trends.naver;
 
   return (
     <>
       <TrendingBanner global={snapshot.trends.global} kr={snapshot.trends.kr} />
 
       {wiki && <WikipediaSection ko={wiki.ko} en={wiki.en} />}
+
+      {naver && (
+        <NaverShoppingSection
+          keywordsByCategory={naver.keywordsByCategory}
+          categoryTrends={naver.categoryTrends}
+        />
+      )}
 
       {top.length > 0 && (
         <section className="border-b border-border-subtle px-4 py-8 lg:px-8">
