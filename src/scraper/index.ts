@@ -23,6 +23,7 @@ import { dedupeArticles } from './dedupe';
 import { fetchRealtimeStoriesByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
 import { extractDerivedKeywords, matchArticles } from './keywords';
+import { fetchNaverCategoryTrends, fetchNaverKeywordsByCategory } from './naver-datalab';
 import { SOURCES, type Source } from './sources';
 import { fetchWikipediaTop } from './wikipedia';
 
@@ -251,14 +252,25 @@ async function main(): Promise<void> {
   const derivedGlobal = extractDerivedKeywords(enArticles, TREND_TOP_N);
 
   // 7. 외부 신호 병렬 fetch: Google Daily RSS, Google realtime API(현재 404),
-  //    Wikipedia Pageviews 한·영 (ADR-0018)
-  const [googleKr, googleGlobal, realtimeKr, realtimeGlobal, wikiKo, wikiEn] = await Promise.all([
+  //    Wikipedia Pageviews 한·영 (ADR-0018), Naver DataLab 쇼핑 (ADR-0020, env 없으면 빈 결과).
+  const [
+    googleKr,
+    googleGlobal,
+    realtimeKr,
+    realtimeGlobal,
+    wikiKo,
+    wikiEn,
+    naverCategoryTrends,
+    naverKeywords,
+  ] = await Promise.all([
     fetchGoogleTrends('KR'),
     fetchGoogleTrends('US'),
     fetchRealtimeStoriesByGeo('KR'),
     fetchRealtimeStoriesByGeo('global'),
     fetchWikipediaTop('ko.wikipedia'),
     fetchWikipediaTop('en.wikipedia'),
+    fetchNaverCategoryTrends(),
+    fetchNaverKeywordsByCategory(),
   ]);
 
   // 8. Daily 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
@@ -277,6 +289,7 @@ async function main(): Promise<void> {
   const now = new Date();
   const hasStories = storiesKr.length > 0 || storiesGlobal.length > 0;
   const hasWiki = wikiKo.length > 0 || wikiEn.length > 0;
+  const hasNaver = naverCategoryTrends.length > 0 || Object.keys(naverKeywords).length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -292,6 +305,12 @@ async function main(): Promise<void> {
       kr: trendsKr,
       ...(hasStories && { stories: { kr: storiesKr, global: storiesGlobal } }),
       ...(hasWiki && { wikipedia: { ko: wikiKo, en: wikiEn } }),
+      ...(hasNaver && {
+        naver: {
+          keywordsByCategory: naverKeywords,
+          categoryTrends: naverCategoryTrends,
+        },
+      }),
     },
   };
 
@@ -301,8 +320,9 @@ async function main(): Promise<void> {
   const trendsCount = trendsKr.length + trendsGlobal.length;
   const storiesCount = storiesKr.length + storiesGlobal.length;
   const wikiCount = wikiKo.length + wikiEn.length;
+  const naverKeywordCount = Object.values(naverKeywords).reduce((n, arr) => n + arr.length, 0);
   console.log(
-    `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} daily trends, ${storiesCount} stories (realtime ${realtimeKr.length + realtimeGlobal.length} / inferred ${inferredKr.length + inferredGlobal.length}), ${wikiCount} wiki entries in ${ms}ms`,
+    `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} daily trends, ${storiesCount} stories (realtime ${realtimeKr.length + realtimeGlobal.length} / inferred ${inferredKr.length + inferredGlobal.length}), ${wikiCount} wiki entries, ${naverCategoryTrends.length} naver category trends + ${naverKeywordCount} naver keywords in ${ms}ms`,
   );
 }
 

@@ -1,0 +1,156 @@
+// Naver DataLab 쇼핑 API — ADR-0020.
+// 인증: NAVER_CLIENT_ID / NAVER_CLIENT_SECRET (.env.local 또는 GitHub Secrets).
+// env 미설정 시 graceful skip — 빈 결과 반환, scraper가 snapshot.trends.naver 안 박음.
+
+import type {
+  HistoryPoint,
+  NaverShoppingCategoryTrend,
+  NaverShoppingKeyword,
+} from '@/lib/types';
+
+import { NAVER_CATEGORIES } from './naver-shopping-keywords';
+
+const BASE_URL = 'https://openapi.naver.com/v1/datalab/shopping';
+const FETCH_TIMEOUT_MS = 15_000;
+const HISTORY_DAYS = 14;
+const TOP_PER_CATEGORY = 6;
+const KEYWORD_CHUNK = 5;
+
+type Credentials = { clientId: string; clientSecret: string };
+
+function getCredentials(): Credentials | null {
+  const clientId = process.env.NAVER_CLIENT_ID?.trim();
+  const clientSecret = process.env.NAVER_CLIENT_SECRET?.trim();
+  if (!clientId || !clientSecret) return null;
+  return { clientId, clientSecret };
+}
+
+function dateString(daysAgo: number): string {
+  const kst = new Date(Date.now() + 9 * 3_600_000);
+  kst.setUTCDate(kst.getUTCDate() - daysAgo);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+async function naverFetch<T>(
+  path: string,
+  body: unknown,
+  creds: Credentials,
+): Promise<T | null> {
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Naver-Client-Id': creds.clientId,
+        'X-Naver-Client-Secret': creds.clientSecret,
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      console.warn(`[scrape] naver ${path} HTTP ${res.status} ${txt.slice(0, 120)}`);
+      return null;
+    }
+    return (await res.json()) as T;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[scrape] naver ${path} failed: ${msg}`);
+    return null;
+  }
+}
+
+// ── 카테고리 분야별 트렌드 (한 호출에 모든 카테고리) ───────────────────────
+type CategoriesResponse = {
+  startDate?: string;
+  endDate?: string;
+  timeUnit?: string;
+  results?: Array<{
+    title?: string;
+    category?: string[];
+    data?: Array<{ period?: string; ratio?: number }>;
+  }>;
+};
+
+export async function fetchNaverCategoryTrends(): Promise<NaverShoppingCategoryTrend[]> {
+  const creds = getCredentials();
+  if (!creds) return [];
+  const body = {
+    startDate: dateString(HISTORY_DAYS),
+    endDate: dateString(1),
+    timeUnit: 'date',
+    category: NAVER_CATEGORIES.map((c) => ({ name: c.alias, param: [c.code] })),
+  };
+  const json = await naverFetch<CategoriesResponse>('/categories', body, creds);
+  if (!json?.results) return [];
+  return json.results
+    .map((r): NaverShoppingCategoryTrend | null => {
+      const cat = NAVER_CATEGORIES.find((c) => c.alias === r.title);
+      if (!cat) return null;
+      return {
+        category: cat.alias,
+        categoryCode: cat.code,
+        history: (r.data ?? []).map(toHistoryPoint).filter(isHistoryPoint),
+      };
+    })
+    .filter((c): c is NaverShoppingCategoryTrend => c !== null);
+}
+
+// ── 카테고리 내 키워드 트렌드 (카테고리 × 키워드 5씩 chunk 병렬) ────────────
+type KeywordsResponse = {
+  results?: Array<{
+    title?: string;
+    keyword?: string[];
+    data?: Array<{ period?: string; ratio?: number }>;
+  }>;
+};
+
+export async function fetchNaverKeywordsByCategory(): Promise<Record<string, NaverShoppingKeyword[]>> {
+  const creds = getCredentials();
+  if (!creds) return {};
+  const out: Record<string, NaverShoppingKeyword[]> = {};
+
+  for (const cat of NAVER_CATEGORIES) {
+    const keywords: NaverShoppingKeyword[] = [];
+    for (let i = 0; i < cat.keywords.length; i += KEYWORD_CHUNK) {
+      const chunk = cat.keywords.slice(i, i + KEYWORD_CHUNK);
+      const body = {
+        startDate: dateString(HISTORY_DAYS),
+        endDate: dateString(1),
+        timeUnit: 'date',
+        category: cat.code,
+        keyword: chunk.map((k) => ({ name: k, param: [k] })),
+      };
+      const json = await naverFetch<KeywordsResponse>('/category/keywords', body, creds);
+      if (!json?.results) continue;
+      for (const r of json.results) {
+        const history = (r.data ?? []).map(toHistoryPoint).filter(isHistoryPoint);
+        const last = history.at(-1)?.views ?? 0;
+        keywords.push({
+          category: cat.alias,
+          categoryCode: cat.code,
+          keyword: r.title ?? '',
+          score: last,
+          history,
+        });
+      }
+    }
+    // 어제 점수로 정렬 → top N.
+    keywords.sort((a, b) => b.score - a.score);
+    out[cat.alias] = keywords.slice(0, TOP_PER_CATEGORY);
+  }
+
+  return out;
+}
+
+function toHistoryPoint(d: { period?: string; ratio?: number }): HistoryPoint | null {
+  if (!d.period || typeof d.ratio !== 'number') return null;
+  return { date: d.period, views: d.ratio };
+}
+
+function isHistoryPoint(p: HistoryPoint | null): p is HistoryPoint {
+  return p !== null;
+}

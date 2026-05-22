@@ -120,5 +120,27 @@ export type DailySnapshot = {
       ko: WikiTrend[];
       en: WikiTrend[];
     };
+    /** ADR-0020: Naver DataLab 쇼핑. */
+    naver?: {
+      keywordsByCategory: Record<string, NaverShoppingKeyword[]>;
+      categoryTrends: NaverShoppingCategoryTrend[];
+    };
   };
+};
+
+export type NaverShoppingKeyword = {
+  /** 우리 별칭 ("패션", "뷰티", ...). */
+  category: string;
+  /** Naver category 코드 (예: "50000000"). */
+  categoryCode: string;
+  keyword: string;
+  /** 어제 검색량 (0~100 상대 비율, 한 호출 그룹 내 정규화). */
+  score: number;
+  history?: HistoryPoint[];
+};
+
+export type NaverShoppingCategoryTrend = {
+  category: string;
+  categoryCode: string;
+  history: HistoryPoint[];
 };
