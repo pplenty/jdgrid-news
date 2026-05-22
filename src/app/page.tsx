@@ -7,7 +7,7 @@ import { getCategoryItems, loadLatest } from '@/lib/data';
 import { ArticleCard } from './_components/ArticleCard';
 import { CategorySection } from './_components/CategorySection';
 import { NaverShoppingSection } from './_components/NaverShoppingSection';
-import { TrendingBanner } from './_components/TrendingBanner';
+import { TrendingHero } from './_components/TrendingHero';
 import { WikipediaSection } from './_components/WikipediaSection';
 
 const DOMAIN_CATEGORIES: ReadonlyArray<Exclude<CategoryId, 'top'>> = CATEGORY_IDS.filter(
@@ -23,7 +23,11 @@ export default function HomePage() {
 
   return (
     <>
-      <TrendingBanner global={snapshot.trends.global} kr={snapshot.trends.kr} />
+      <TrendingHero
+        kr={snapshot.trends.kr}
+        global={snapshot.trends.global}
+        date={snapshot.date}
+      />
 
       {wiki && <WikipediaSection ko={wiki.ko} en={wiki.en} />}
 
@@ -36,7 +40,7 @@ export default function HomePage() {
 
       {top.length > 0 && (
         <section className="border-b border-border-subtle px-4 py-8 lg:px-8">
-          <h2 className="mb-4 text-xl font-bold tracking-tight">⭐ TOP STORIES</h2>
+          <h2 className="mb-4 text-xl font-bold tracking-tight">⭐ 최신 헤드라인</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {top.slice(0, 6).map((article, idx) => (
               <ArticleCard
