@@ -81,6 +81,12 @@ export type TrendStory = {
   articles: TrendArticle[];
 };
 
+export type HistoryPoint = {
+  /** YYYY-MM-DD. */
+  date: string;
+  views: number;
+};
+
 export type WikiTrend = {
   /** 위키 문서 제목 (사람이 읽기 좋은 형태, 언더스코어 → 공백). */
   title: string;
@@ -91,6 +97,8 @@ export type WikiTrend = {
   /** v1엔 미수집 — page summary API 비용 회피. */
   thumbnail?: string;
   description?: string;
+  /** ADR-0019: 지난 7일 일자별 views (top 10에만). */
+  history?: HistoryPoint[];
 };
 
 export type DailySnapshot = {
