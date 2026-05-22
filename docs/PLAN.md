@@ -222,6 +222,7 @@
 - [ADR-0017 — Realtime Trends Categories: Google realtime API cat=b/e/m/t/s/h + /trends 페이지](./adr/0017-realtime-trends-categories.md)
 - [ADR-0018 — Trend Source Fallback: 자체 분류 + Wikipedia Pageviews (ADR-0017 보완)](./adr/0018-trend-fallback-self-categorize-wikipedia.md)
 - [ADR-0019 — Wikipedia Sparkline: top 10 7일 historical](./adr/0019-wikipedia-sparkline.md)
+- [ADR-0020 — Naver DataLab Shopping: 분야별 + 큐레이션 키워드 트렌드](./adr/0020-naver-datalab-shopping.md)
 
 ---
 
