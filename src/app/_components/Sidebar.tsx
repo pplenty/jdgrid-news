@@ -4,7 +4,7 @@
 // 모바일은 ClientShell의 drawer 상태로 열림.
 
 import Link from 'next/link';
-import { Hash, LayoutGrid, TrendingUp, X } from 'lucide-react';
+import { ArrowRight, Hash, LayoutGrid, TrendingUp, X } from 'lucide-react';
 
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
 import type { SidebarData } from '@/lib/data';
@@ -72,7 +72,16 @@ export function Sidebar({ data, activeCategory, drawerOpen = false, onClose }: P
           </ul>
 
           <div className="mt-7">
-            <SectionHeader icon={TrendingUp}>트렌딩</SectionHeader>
+            <div className="flex items-center justify-between">
+              <SectionHeader icon={TrendingUp}>트렌딩</SectionHeader>
+              <Link
+                href="/trends/"
+                onClick={onClose}
+                className="inline-flex items-center gap-0.5 px-2 text-[10px] font-medium text-fg-subtle hover:text-fg"
+              >
+                상세 <ArrowRight size={10} />
+              </Link>
+            </div>
             <TrendBlock label="🇰🇷 국내" trends={data.trends.kr} onNavigate={onClose} />
             <TrendBlock label="🌐 글로벌" trends={data.trends.global} onNavigate={onClose} />
           </div>

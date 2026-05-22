@@ -2,7 +2,7 @@
 // Google Trends RSS 풍부화: traffic, picture, 매체 사용.
 
 import Link from 'next/link';
-import { TrendingUp } from 'lucide-react';
+import { ArrowRight, TrendingUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import type { Trend } from '@/lib/types';
@@ -25,6 +25,13 @@ export function TrendingBanner({ global, kr }: Props) {
           <TrendingUp size={15} className="text-fg-muted" />
           <h2 className="text-sm font-semibold tracking-tight text-fg">오늘의 트렌드</h2>
           <span className="text-xs text-fg-subtle">via Google Trends</span>
+          <Link
+            href="/trends/"
+            className="ml-auto inline-flex items-center gap-0.5 text-xs font-medium text-fg-muted hover:text-accent-fg"
+          >
+            카테고리별 상세
+            <ArrowRight size={12} />
+          </Link>
         </div>
 
         <div className="grid gap-x-6 gap-y-4 md:grid-cols-2">
