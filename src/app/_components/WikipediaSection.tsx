@@ -1,8 +1,10 @@
-// Wikipedia 어제 top — ADR-0018.
+// Wikipedia 어제 top — ADR-0018 + ADR-0019 (top 10에 sparkline).
 
 import { BookOpen } from 'lucide-react';
 
 import type { WikiTrend } from '@/lib/types';
+
+import { Sparkline } from './Sparkline';
 
 type Props = {
   ko: WikiTrend[];
@@ -46,7 +48,10 @@ function WikiColumn({ label, items }: { label: string; items: WikiTrend[] }) {
               <span className="min-w-0 flex-1 truncate text-sm text-fg group-hover:text-accent-fg">
                 {w.title}
               </span>
-              <span className="shrink-0 text-[11px] tabular-nums text-fg-subtle">
+              {w.history && w.history.length >= 2 && (
+                <Sparkline values={w.history.map((p) => p.views)} className="shrink-0" />
+              )}
+              <span className="w-12 shrink-0 text-right text-[11px] tabular-nums text-fg-subtle">
                 {formatViews(w.views)}
               </span>
             </a>
