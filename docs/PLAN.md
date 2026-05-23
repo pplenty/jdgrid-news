@@ -228,6 +228,7 @@
 - [ADR-0023 — Analytics v1: Movers + Category Comparison](./adr/0023-analytics-v1.md)
 - [ADR-0024 — Main Page Cleanup: 콘텐츠 vs 분석 분리 (/analytics 신설)](./adr/0024-main-page-cleanup.md)
 - [ADR-0025 — Hacker News Top: Algolia API, 영문 tech 트렌드 source](./adr/0025-hackernews-source.md)
+- [ADR-0026 — YouTube Korea + Reddit Top: 영상·커뮤니티 source](./adr/0026-youtube-reddit-sources.md)
 
 ---
 
