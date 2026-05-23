@@ -3,7 +3,7 @@
 // 미니멀 헤더 (ADR-0009): 로고 + 우상단 액션 (날짜·테마 토글). 모바일 ☰ 버튼.
 
 import Link from 'next/link';
-import { Menu, Monitor, Moon, Sun } from 'lucide-react';
+import { Menu, Monitor, Moon, PanelLeft, Sun } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { formatDateLabel } from '@/lib/utils';
@@ -12,10 +12,12 @@ import { useTheme, type Theme } from './ThemeProvider';
 
 type Props = {
   date: string;
+  sidebarCollapsed?: boolean;
   onOpenDrawer?: () => void;
+  onToggleSidebar?: () => void;
 };
 
-export function Header({ date, onOpenDrawer }: Props) {
+export function Header({ date, sidebarCollapsed, onOpenDrawer, onToggleSidebar }: Props) {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-bg/85 px-4 backdrop-blur lg:px-8">
       <div className="flex items-center gap-3">
@@ -26,6 +28,14 @@ export function Header({ date, onOpenDrawer }: Props) {
           className="rounded-md p-1.5 text-fg-muted hover:bg-bg-subtle hover:text-fg lg:hidden"
         >
           <Menu size={20} />
+        </button>
+        <button
+          type="button"
+          aria-label={sidebarCollapsed ? 'show sidebar' : 'hide sidebar'}
+          onClick={onToggleSidebar}
+          className="hidden rounded-md p-1.5 text-fg-muted hover:bg-bg-subtle hover:text-fg lg:inline-flex"
+        >
+          <PanelLeft size={20} />
         </button>
         <Link href="/" className="text-base font-bold tracking-tight lg:hidden">
           trends

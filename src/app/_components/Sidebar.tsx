@@ -18,10 +18,17 @@ type Props = {
   data: SidebarData;
   activeCategory?: CategoryId;
   drawerOpen?: boolean;
+  collapsed?: boolean;
   onClose?: () => void;
 };
 
-export function Sidebar({ data, activeCategory, drawerOpen = false, onClose }: Props) {
+export function Sidebar({
+  data,
+  activeCategory,
+  drawerOpen = false,
+  collapsed = false,
+  onClose,
+}: Props) {
   return (
     <>
       <button
@@ -34,8 +41,10 @@ export function Sidebar({ data, activeCategory, drawerOpen = false, onClose }: P
         className={cn(
           'fixed top-0 left-0 z-40 h-screen w-64 shrink-0 overflow-y-auto',
           'border-r border-border bg-bg-sidebar scrollbar-thin',
-          'transition-transform lg:translate-x-0 lg:sticky',
+          'transition-transform lg:translate-x-0',
           drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          // 데스크탑에서 collapsed면 사이드바 자체 hide → main이 풀 폭.
+          collapsed ? 'lg:hidden' : 'lg:sticky',
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-border-subtle px-5">
