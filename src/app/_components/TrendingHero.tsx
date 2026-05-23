@@ -1,5 +1,6 @@
-// 메인 페이지 hero 영역 — ADR-0021 (재디자인).
-// 매거진 레이아웃: TOP 3 큰 정사각 카드 + 4~10위 작은 리스트.
+// 메인 페이지 hero 영역 — ADR-0021 + 모바일 압축.
+// 데스크탑: TOP 3 큰 정사각 카드 + 4~10위 리스트
+// 모바일: TOP 1만 정사각 카드(w-3/4) + 2~10 작은 리스트
 
 import Link from 'next/link';
 import { ArrowRight, Flame } from 'lucide-react';
@@ -21,25 +22,25 @@ export function TrendingHero({ kr, global, date }: Props) {
       aria-label="오늘의 트렌드"
       className="border-b border-border bg-gradient-to-br from-accent-subtle/60 via-accent-subtle/10 to-bg"
     >
-      <div className="px-4 py-10 lg:px-8 lg:py-14">
-        <header className="mb-8 flex flex-wrap items-end gap-x-4 gap-y-2">
-          <h1 className="flex items-center gap-2.5 text-3xl font-black tracking-tight md:text-4xl">
-            <Flame className="text-accent" size={32} />
+      <div className="px-4 py-8 lg:px-8 lg:py-14">
+        <header className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 lg:mb-8">
+          <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight md:text-4xl">
+            <Flame className="text-accent" size={28} />
             오늘의 트렌드
           </h1>
-          <span className="text-sm text-fg-muted">
+          <span className="text-xs text-fg-muted md:text-sm">
             {formatDateLabel(date)} · via Google Trends
           </span>
           <Link
             href="/trends/"
-            className="ml-auto inline-flex items-center gap-1 rounded-full border border-border bg-bg px-3 py-1.5 text-sm font-medium text-fg-muted shadow-sm transition-colors hover:border-accent hover:text-accent-fg"
+            className="ml-auto inline-flex items-center gap-1 rounded-full border border-border bg-bg px-3 py-1.5 text-xs font-medium text-fg-muted shadow-sm transition-colors hover:border-accent hover:text-accent-fg md:text-sm"
           >
             카테고리별 상세
             <ArrowRight size={14} />
           </Link>
         </header>
 
-        <div className="grid gap-10 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
           <GeoBlock label="🇰🇷 한국" trends={kr} />
           <GeoBlock label="🌐 글로벌" trends={global} />
         </div>
@@ -50,20 +51,44 @@ export function TrendingHero({ kr, global, date }: Props) {
 
 function GeoBlock({ label, trends }: { label: string; trends: Trend[] }) {
   if (trends.length === 0) return null;
-  const tops = trends.slice(0, 3);
-  const rest = trends.slice(3, 10);
+  const first = trends[0];
+  const middle = trends.slice(1, 3); // 2, 3위
+  const rest = trends.slice(3, 10); // 4-10위
+
   return (
     <div>
-      <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-fg-muted">{label}</h2>
-      {/* TOP 3 */}
-      <div className="grid grid-cols-3 gap-3">
-        {tops.map((t, idx) => (
-          <BigCard key={t.keyword} rank={idx + 1} trend={t} />
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-fg-muted lg:mb-4">
+        {label}
+      </h2>
+
+      {/* TOP 1~3: 모바일은 TOP 1만 작은 카드, sm+는 3 카드 그리드 */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        {first && (
+          <div className="mx-auto w-2/3 sm:mx-0 sm:w-auto">
+            <BigCard rank={1} trend={first} />
+          </div>
+        )}
+        {middle.map((t, idx) => (
+          <div key={t.keyword} className="hidden sm:block">
+            <BigCard rank={idx + 2} trend={t} />
+          </div>
         ))}
       </div>
-      {/* 4~10위 */}
+
+      {/* 모바일: 2, 3위를 작은 리스트로 흡수 */}
+      {middle.length > 0 && (
+        <ol className="mt-2 space-y-0.5 sm:hidden">
+          {middle.map((t, idx) => (
+            <li key={t.keyword}>
+              <SmallRow rank={idx + 2} trend={t} />
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {/* 4~10위: 모든 화면에서 작은 리스트 */}
       {rest.length > 0 && (
-        <ol className="mt-4 space-y-0.5">
+        <ol className="mt-3 space-y-0.5 lg:mt-4">
           {rest.map((t, idx) => (
             <li key={t.keyword}>
               <SmallRow rank={idx + 4} trend={t} />
@@ -77,10 +102,7 @@ function GeoBlock({ label, trends }: { label: string; trends: Trend[] }) {
 
 function BigCard({ rank, trend }: { rank: number; trend: Trend }) {
   return (
-    <Link
-      href={`/k/${encodeURIComponent(trend.keyword)}/`}
-      className="group block"
-    >
+    <Link href={`/k/${encodeURIComponent(trend.keyword)}/`} className="group block">
       <div className="relative aspect-square overflow-hidden rounded-lg bg-bg-subtle ring-1 ring-border-subtle">
         {trend.picture ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -118,10 +140,7 @@ function SmallRow({ rank, trend }: { rank: number; trend: Trend }) {
   return (
     <Link
       href={`/k/${encodeURIComponent(trend.keyword)}/`}
-      className={cn(
-        'group flex items-center gap-3 rounded-md px-2 py-1.5',
-        'hover:bg-bg/80',
-      )}
+      className={cn('group flex items-center gap-3 rounded-md px-2 py-1.5', 'hover:bg-bg/80')}
     >
       <span className="w-5 shrink-0 text-center text-sm font-bold tabular-nums text-fg-subtle">
         {rank}
