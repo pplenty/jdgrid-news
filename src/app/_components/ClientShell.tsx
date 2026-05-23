@@ -23,9 +23,11 @@ function extractActiveCategory(pathname: string | null): CategoryId | undefined 
 
 export function ClientShell({
   children,
+  footer,
   sidebarData,
 }: {
   children: ReactNode;
+  footer: ReactNode;
   sidebarData: SidebarData;
 }) {
   const pathname = usePathname();
@@ -48,12 +50,7 @@ export function ClientShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <Header date={sidebarData.date} onOpenDrawer={() => setDrawerOpen(true)} />
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-border-subtle px-4 py-6 text-xs text-fg-subtle lg:px-8">
-          데이터 출처 · 면책 ·{' '}
-          <a href="/about/" className="hover:text-fg">
-            About
-          </a>
-        </footer>
+        {footer}
       </div>
     </div>
   );

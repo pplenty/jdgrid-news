@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { loadLatest, toSidebarData } from '@/lib/data';
 
 import { ClientShell } from './_components/ClientShell';
+import { Footer } from './_components/Footer';
 import { ThemeProvider, THEME_INIT_SCRIPT } from './_components/ThemeProvider';
 import './globals.css';
 
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-sans">
         <ThemeProvider>
-          <ClientShell sidebarData={sidebarData}>{children}</ClientShell>
+          <ClientShell sidebarData={sidebarData} footer={<Footer />}>
+            {children}
+          </ClientShell>
         </ThemeProvider>
       </body>
     </html>
