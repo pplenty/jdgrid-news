@@ -30,25 +30,25 @@ const config: Config = {
         '3xl': ['2rem', { lineHeight: '1.25', letterSpacing: '-0.025em' }],
       },
       colors: {
-        // 의미 기반 색상 토큰. dark mode는 .dark 클래스 prefix.
+        // 의미 기반 토큰 — globals.css의 CSS 변수에 연동, .dark 자동 전환.
         bg: {
-          DEFAULT: '#ffffff',
-          subtle: '#f7f7f8',
-          sidebar: '#fafafa',
+          DEFAULT: 'rgb(var(--color-bg) / <alpha-value>)',
+          subtle: 'rgb(var(--color-bg-subtle) / <alpha-value>)',
+          sidebar: 'rgb(var(--color-bg-sidebar) / <alpha-value>)',
         },
         fg: {
-          DEFAULT: '#0f0f10',
-          muted: '#52525b',
-          subtle: '#71717a',
+          DEFAULT: 'rgb(var(--color-fg) / <alpha-value>)',
+          muted: 'rgb(var(--color-fg-muted) / <alpha-value>)',
+          subtle: 'rgb(var(--color-fg-subtle) / <alpha-value>)',
         },
         border: {
-          DEFAULT: '#e5e5e7',
-          subtle: '#efefef',
+          DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
+          subtle: 'rgb(var(--color-border-subtle) / <alpha-value>)',
         },
         accent: {
-          DEFAULT: '#4f46e5',
-          subtle: '#e0e7ff',
-          fg: '#4338ca',
+          DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
+          subtle: 'rgb(var(--color-accent-subtle) / <alpha-value>)',
+          fg: 'rgb(var(--color-accent-fg) / <alpha-value>)',
         },
       },
       maxWidth: {

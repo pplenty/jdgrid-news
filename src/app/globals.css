@@ -20,13 +20,14 @@
   --color-border-subtle: 239 239 239;
   --color-accent: 79 70 229;
   --color-accent-subtle: 224 231 255;
+  --color-accent-fg: 67 56 202;
 }
 
 html.dark {
   color-scheme: dark;
 
   --color-bg: 9 9 11;
-  --color-bg-subtle: 18 18 22;
+  --color-bg-subtle: 24 24 27;
   --color-bg-sidebar: 14 14 17;
   --color-fg: 244 244 245;
   --color-fg-muted: 161 161 170;
@@ -35,6 +36,7 @@ html.dark {
   --color-border-subtle: 28 28 32;
   --color-accent: 129 140 248;
   --color-accent-subtle: 49 46 129;
+  --color-accent-fg: 165 180 252;
 }
 
 html {
