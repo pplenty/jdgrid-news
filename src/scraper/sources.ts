@@ -61,33 +61,21 @@ export const SOURCES: readonly Source[] = [
     weight: 1,
   },
 
-  // Reuters — 공식 RSS는 2022 이후 제한적. reutersagency.com 피드 사용.
-  // M1 운영 후 헬스체크 결과에 따라 교체 후보.
+  // ADR-0027: AP·Reuters RSS 폐지로 Al Jazeera·NPR로 교체.
   {
-    id: 'reuters-world',
-    name: 'Reuters',
-    homepage: 'https://www.reuters.com',
-    url: 'https://www.reutersagency.com/feed/?best-topics=world&post_type=best',
+    id: 'aljazeera-world',
+    name: 'Al Jazeera',
+    homepage: 'https://www.aljazeera.com',
+    url: 'https://www.aljazeera.com/xml/rss/all.xml',
     category: 'world',
     lang: 'en',
     weight: 1,
   },
   {
-    id: 'reuters-business',
-    name: 'Reuters',
-    homepage: 'https://www.reuters.com',
-    url: 'https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best',
-    category: 'business',
-    lang: 'en',
-    weight: 1,
-  },
-
-  // AP News — hub 기반 RSS.
-  {
-    id: 'ap-world',
-    name: 'AP News',
-    homepage: 'https://apnews.com',
-    url: 'https://apnews.com/hub/world-news.rss',
+    id: 'npr-world',
+    name: 'NPR',
+    homepage: 'https://www.npr.org',
+    url: 'https://feeds.npr.org/1004/rss.xml',
     category: 'world',
     lang: 'en',
     weight: 1,
@@ -182,12 +170,31 @@ export const SOURCES: readonly Source[] = [
     lang: 'ko',
     weight: 1,
   },
+  // ADR-0027: yna.co.kr/rss/itscience.xml 폐지 → society·culture·sports로 다양화.
   {
-    id: 'yonhap-tech',
+    id: 'yonhap-society',
     name: '연합뉴스',
     homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/itscience.xml',
-    category: 'tech',
+    url: 'https://www.yna.co.kr/rss/society.xml',
+    category: 'world',
+    lang: 'ko',
+    weight: 1,
+  },
+  {
+    id: 'yonhap-culture',
+    name: '연합뉴스',
+    homepage: 'https://www.yna.co.kr',
+    url: 'https://www.yna.co.kr/rss/culture.xml',
+    category: 'culture',
+    lang: 'ko',
+    weight: 1,
+  },
+  {
+    id: 'yonhap-sports',
+    name: '연합뉴스',
+    homepage: 'https://www.yna.co.kr',
+    url: 'https://www.yna.co.kr/rss/sports.xml',
+    category: 'sports',
     lang: 'ko',
     weight: 1,
   },
@@ -254,14 +261,5 @@ export const SOURCES: readonly Source[] = [
     weight: 1,
   },
 
-  // KBS World — 다국어 종합. 국문 lang=k.
-  {
-    id: 'kbs-top',
-    name: 'KBS NEWS',
-    homepage: 'https://world.kbs.co.kr/service/index.htm?lang=k',
-    url: 'https://world.kbs.co.kr/rss/rss_news.htm?lang=k',
-    category: 'top',
-    lang: 'ko',
-    weight: 1,
-  },
+  // KBS World RSS는 ADR-0027에서 폐지 확인 후 제거.
 ];
