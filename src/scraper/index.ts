@@ -249,11 +249,13 @@ async function main(): Promise<void> {
   // 5. top 자동 집계 (ADR-0008)
   buckets.set('top', aggregateTop(buckets));
 
-  // 6. 자체 키워드 추출
+  // 6. 자체 키워드 추출 + 빈도 (워드클라우드용 별도 보관)
   const koArticles = deduped.filter((a) => a.lang === 'ko');
   const enArticles = deduped.filter((a) => a.lang === 'en');
   const derivedKr = extractDerivedKeywords(koArticles, TREND_TOP_N);
   const derivedGlobal = extractDerivedKeywords(enArticles, TREND_TOP_N);
+  const cloudKo = extractDerivedKeywords(koArticles, 40);
+  const cloudEn = extractDerivedKeywords(enArticles, 40);
 
   // 7. 외부 신호 병렬 fetch: Google Daily RSS, Google realtime API(현재 404),
   //    Wikipedia Pageviews 한·영 (ADR-0018), Naver DataLab 쇼핑 (ADR-0020, env 없으면 빈 결과).
@@ -297,6 +299,7 @@ async function main(): Promise<void> {
   const hasWiki = wikiKo.length > 0 || wikiEn.length > 0;
   const hasNaver = naverCategoryTrends.length > 0 || Object.keys(naverKeywords).length > 0;
   const hasItunes = itunes.music.length > 0 || itunes.apps.length > 0;
+  const hasCloud = cloudKo.length > 0 || cloudEn.length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -319,6 +322,7 @@ async function main(): Promise<void> {
         },
       }),
       ...(hasItunes && { itunes }),
+      ...(hasCloud && { derived: { ko: cloudKo, en: cloudEn } }),
     },
   };
 

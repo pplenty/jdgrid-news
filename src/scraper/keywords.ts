@@ -18,6 +18,9 @@ export function stripKoreanParticles(word: string): string {
   return word;
 }
 
+/** 날짜·시간 단위 패턴 (예: "22일", "5월", "오후", "12시") — 헤드라인에 자주 등장하는 메타 토큰. */
+const KO_DATE_PATTERN = /^\d+[일월시분초년주]$/;
+
 export function tokenize(text: string, lang: 'ko' | 'en'): string[] {
   // 유니코드 letter·digit·공백·#만 남기고 나머지는 공백 치환.
   const cleaned = text.replace(/[^\p{L}\p{N}\s#]/gu, ' ');
@@ -27,6 +30,7 @@ export function tokenize(text: string, lang: 'ko' | 'en'): string[] {
     return words
       .map(stripKoreanParticles)
       .filter((w) => w.length >= KO_MIN_LEN)
+      .filter((w) => !KO_DATE_PATTERN.test(w))
       .filter((w) => !KO_STOPWORDS.has(w));
   }
 

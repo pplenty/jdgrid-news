@@ -120,6 +120,11 @@ export type DailySnapshot = {
       ko: WikiTrend[];
       en: WikiTrend[];
     };
+    /** ADR-0023 후속: 자체 키워드 빈도 (워드클라우드 원천). ADR-0014 기반. */
+    derived?: {
+      ko: { keyword: string; count: number }[];
+      en: { keyword: string; count: number }[];
+    };
     /** ADR-0020: Naver DataLab 쇼핑. */
     naver?: {
       keywordsByCategory: Record<string, NaverShoppingKeyword[]>;

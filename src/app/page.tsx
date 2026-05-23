@@ -10,6 +10,7 @@ import { MoversSection } from './_components/MoversSection';
 import { NaverShoppingSection } from './_components/NaverShoppingSection';
 import { TrendingHero } from './_components/TrendingHero';
 import { WikipediaSection } from './_components/WikipediaSection';
+import { WordCloudSection } from './_components/WordCloudSection';
 
 export default function HomePage() {
   const snapshot = loadLatest();
@@ -17,6 +18,7 @@ export default function HomePage() {
   const wiki = snapshot.trends.wikipedia;
   const naver = snapshot.trends.naver;
   const itunes = snapshot.trends.itunes;
+  const derived = snapshot.trends.derived;
 
   const moversKr = yesterday
     ? computeMovers(snapshot.trends.kr, yesterday.trends.kr)
@@ -47,6 +49,8 @@ export default function HomePage() {
           categoryTrends={naver.categoryTrends}
         />
       )}
+
+      {derived && <WordCloudSection ko={derived.ko} en={derived.en} />}
     </>
   );
 }
