@@ -72,6 +72,36 @@ export function findTrendByKeyword(snapshot: DailySnapshot, keyword: string): Tr
   return [...snapshot.trends.kr, ...snapshot.trends.global].find((t) => t.keyword === needle);
 }
 
+export type MediaCategoryRow = {
+  name: string;
+  total: number;
+  counts: Partial<Record<CategoryId, number>>;
+};
+
+/** 매체별 카테고리 분포 — ADR-0023 §매체↔카테고리. */
+export function computeMediaCategoryMatrix(snapshot: DailySnapshot): MediaCategoryRow[] {
+  const matrix = new Map<string, Map<CategoryId, number>>();
+  for (const bucket of snapshot.categories) {
+    if (bucket.id === 'top') continue; // top은 다른 카테고리 집계라 중복
+    for (const article of bucket.items) {
+      const name = article.source.name;
+      if (!matrix.has(name)) matrix.set(name, new Map());
+      const counts = matrix.get(name)!;
+      counts.set(bucket.id, (counts.get(bucket.id) ?? 0) + 1);
+    }
+  }
+  return [...matrix.entries()]
+    .map(([name, counts]) => {
+      const total = [...counts.values()].reduce((s, n) => s + n, 0);
+      return {
+        name,
+        total,
+        counts: Object.fromEntries(counts.entries()) as Partial<Record<CategoryId, number>>,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+}
+
 export function findArticlesByKeyword(snapshot: DailySnapshot, keyword: string): Article[] {
   const needle = keyword.toLowerCase().trim();
   if (!needle) return [];

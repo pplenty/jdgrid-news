@@ -2,10 +2,11 @@
 // 트렌드 전용: TrendingHero + Wikipedia + Naver + (추후 iTunes Korea).
 // 헤드라인은 /headlines로 분리.
 
-import { loadLatest, loadPrevious } from '@/lib/data';
+import { computeMediaCategoryMatrix, loadLatest, loadPrevious } from '@/lib/data';
 import { computeMovers } from '@/lib/movers';
 
 import { ItunesSection } from './_components/ItunesSection';
+import { MediaCategorySection } from './_components/MediaCategorySection';
 import { MoversSection } from './_components/MoversSection';
 import { NaverShoppingSection } from './_components/NaverShoppingSection';
 import { TrendingHero } from './_components/TrendingHero';
@@ -19,6 +20,7 @@ export default function HomePage() {
   const naver = snapshot.trends.naver;
   const itunes = snapshot.trends.itunes;
   const derived = snapshot.trends.derived;
+  const mediaMatrix = computeMediaCategoryMatrix(snapshot);
 
   const moversKr = yesterday
     ? computeMovers(snapshot.trends.kr, yesterday.trends.kr)
@@ -51,6 +53,8 @@ export default function HomePage() {
       )}
 
       {derived && <WordCloudSection ko={derived.ko} en={derived.en} />}
+
+      {mediaMatrix.length > 0 && <MediaCategorySection rows={mediaMatrix} />}
     </>
   );
 }
