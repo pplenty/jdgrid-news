@@ -27,7 +27,9 @@ const config: Config = {
         lg: ['1.1875rem', { lineHeight: '1.55', letterSpacing: '-0.01em' }],
         xl: ['1.375rem', { lineHeight: '1.4', letterSpacing: '-0.015em' }],
         '2xl': ['1.625rem', { lineHeight: '1.3', letterSpacing: '-0.02em' }],
-        '3xl': ['2rem', { lineHeight: '1.25', letterSpacing: '-0.025em' }],
+        '3xl': ['2rem', { lineHeight: '1.2', letterSpacing: '-0.025em' }],
+        '4xl': ['2.5rem', { lineHeight: '1.15', letterSpacing: '-0.03em' }],
+        '5xl': ['3rem', { lineHeight: '1.1', letterSpacing: '-0.035em' }],
       },
       colors: {
         // 의미 기반 토큰 — globals.css의 CSS 변수에 연동, .dark 자동 전환.
