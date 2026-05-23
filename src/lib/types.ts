@@ -135,7 +135,20 @@ export type DailySnapshot = {
       music: ItunesTrend[];
       apps: ItunesTrend[];
     };
+    /** ADR-0025: Hacker News front_page top. */
+    hackernews?: HackerNewsStory[];
   };
+};
+
+export type HackerNewsStory = {
+  id: number;
+  title: string;
+  /** 외부 링크 또는 self-post HN URL (Ask/Show HN). */
+  url: string;
+  points: number;
+  numComments: number;
+  author: string;
+  createdAt: string;
 };
 
 export type NaverShoppingKeyword = {

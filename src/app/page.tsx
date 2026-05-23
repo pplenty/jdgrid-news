@@ -5,6 +5,7 @@
 import { loadLatest, loadPrevious } from '@/lib/data';
 import { computeMovers } from '@/lib/movers';
 
+import { HackerNewsSection } from './_components/HackerNewsSection';
 import { ItunesSection } from './_components/ItunesSection';
 import { MoversSection } from './_components/MoversSection';
 import { NaverShoppingSection } from './_components/NaverShoppingSection';
@@ -17,6 +18,7 @@ export default function HomePage() {
   const wiki = snapshot.trends.wikipedia;
   const naver = snapshot.trends.naver;
   const itunes = snapshot.trends.itunes;
+  const hn = snapshot.trends.hackernews;
 
   const moversKr = yesterday
     ? computeMovers(snapshot.trends.kr, yesterday.trends.kr)
@@ -40,6 +42,8 @@ export default function HomePage() {
       {wiki && <WikipediaSection ko={wiki.ko} en={wiki.en} />}
 
       {itunes && <ItunesSection music={itunes.music} apps={itunes.apps} />}
+
+      {hn && hn.length > 0 && <HackerNewsSection stories={hn} />}
 
       {naver && (
         <NaverShoppingSection

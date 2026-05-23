@@ -25,6 +25,7 @@ import { trendsToInferredStories } from './auto-categorize';
 import { dedupeArticles } from './dedupe';
 import { fetchRealtimeStoriesByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
+import { fetchHackerNewsTop } from './hackernews';
 import { fetchItunesKorea } from './itunes';
 import { extractDerivedKeywords, matchArticles } from './keywords';
 import { fetchNaverCategoryTrends, fetchNaverKeywordsByCategory } from './naver-datalab';
@@ -269,6 +270,7 @@ async function main(): Promise<void> {
     naverCategoryTrends,
     naverKeywords,
     itunes,
+    hackernews,
   ] = await Promise.all([
     fetchGoogleTrends('KR'),
     fetchGoogleTrends('US'),
@@ -279,6 +281,7 @@ async function main(): Promise<void> {
     fetchNaverCategoryTrends(),
     fetchNaverKeywordsByCategory(),
     fetchItunesKorea(),
+    fetchHackerNewsTop(),
   ]);
 
   // 8. Daily 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
@@ -300,6 +303,7 @@ async function main(): Promise<void> {
   const hasNaver = naverCategoryTrends.length > 0 || Object.keys(naverKeywords).length > 0;
   const hasItunes = itunes.music.length > 0 || itunes.apps.length > 0;
   const hasCloud = cloudKo.length > 0 || cloudEn.length > 0;
+  const hasHN = hackernews.length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -323,6 +327,7 @@ async function main(): Promise<void> {
       }),
       ...(hasItunes && { itunes }),
       ...(hasCloud && { derived: { ko: cloudKo, en: cloudEn } }),
+      ...(hasHN && { hackernews }),
     },
   };
 
