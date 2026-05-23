@@ -137,7 +137,39 @@ export type DailySnapshot = {
     };
     /** ADR-0025: Hacker News front_page top. */
     hackernews?: HackerNewsStory[];
+    /** ADR-0026: YouTube Korea Trending (영상). */
+    youtube?: YouTubeTrend[];
+    /** ADR-0026: Reddit r/all/top (영문 커뮤니티). */
+    reddit?: RedditPost[];
   };
+};
+
+export type YouTubeTrend = {
+  id: string;
+  title: string;
+  channelTitle: string;
+  thumbnail: string;
+  /** youtube.com/watch?v={id}. */
+  url: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  publishedAt: string;
+};
+
+export type RedditPost = {
+  id: string;
+  title: string;
+  subreddit: string;
+  /** 외부 링크 (또는 self-post 시 reddit URL). */
+  url: string;
+  /** 토론 URL — reddit.com + permalink. */
+  permalink: string;
+  score: number;
+  numComments: number;
+  /** sentinel(self/default/nsfw) 제외 후 실제 이미지 URL만. */
+  thumbnail?: string;
+  createdAt: string;
 };
 
 export type HackerNewsStory = {

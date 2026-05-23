@@ -38,6 +38,36 @@ export function ConstellationMark({
   );
 }
 
+export function YouTubeIcon({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      className={className}
+    >
+      <path d="M21.582 6.186a2.506 2.506 0 0 0-1.768-1.768C18.254 4 12 4 12 4s-6.254 0-7.814.418a2.506 2.506 0 0 0-1.768 1.768C2 7.746 2 12 2 12s0 4.254.418 5.814a2.506 2.506 0 0 0 1.768 1.768C5.746 20 12 20 12 20s6.254 0 7.814-.418a2.506 2.506 0 0 0 1.768-1.768C22 16.254 22 12 22 12s0-4.254-.418-5.814zM10 15.464V8.536L16 12l-6 3.464z" />
+    </svg>
+  );
+}
+
+export function RedditIcon({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      className={className}
+    >
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10zm5.535 11.06c.034.193.052.39.052.59 0 2.398-2.79 4.34-6.235 4.34s-6.235-1.942-6.235-4.34c0-.2.018-.397.053-.59a1.32 1.32 0 1 1 1.46-2.13c.97-.68 2.27-1.12 3.71-1.18l.93-3.71a.25.25 0 0 1 .29-.18l2.9.62a.95.95 0 1 1-.07.51l-2.6-.56-.83 3.32c1.42.07 2.7.51 3.66 1.18a1.32 1.32 0 1 1 1.45 2.13zM8.5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm7 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-.32 2.1a.34.34 0 0 1 .03.49 4.2 4.2 0 0 1-3.21 1.21 4.2 4.2 0 0 1-3.21-1.21.347.347 0 1 1 .49-.49 3.51 3.51 0 0 0 2.72.99 3.51 3.51 0 0 0 2.72-.99.34.34 0 0 1 .46 0z" />
+    </svg>
+  );
+}
+
 export function GithubIcon({ size = 14, className }: { size?: number; className?: string }) {
   return (
     <svg

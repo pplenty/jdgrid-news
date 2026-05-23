@@ -29,8 +29,10 @@ import { fetchHackerNewsTop } from './hackernews';
 import { fetchItunesKorea } from './itunes';
 import { extractDerivedKeywords, matchArticles } from './keywords';
 import { fetchNaverCategoryTrends, fetchNaverKeywordsByCategory } from './naver-datalab';
+import { fetchRedditTop } from './reddit';
 import { SOURCES, type Source } from './sources';
 import { fetchWikipediaTop } from './wikipedia';
+import { fetchYouTubeKorea } from './youtube';
 
 // ── 튜닝 상수 (운영 튜닝 영역) ──────────────────────────────────────────
 const TOP_PER_CATEGORY = 12;
@@ -271,6 +273,8 @@ async function main(): Promise<void> {
     naverKeywords,
     itunes,
     hackernews,
+    youtube,
+    reddit,
   ] = await Promise.all([
     fetchGoogleTrends('KR'),
     fetchGoogleTrends('US'),
@@ -282,6 +286,8 @@ async function main(): Promise<void> {
     fetchNaverKeywordsByCategory(),
     fetchItunesKorea(),
     fetchHackerNewsTop(),
+    fetchYouTubeKorea(),
+    fetchRedditTop(),
   ]);
 
   // 8. Daily 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
@@ -304,6 +310,8 @@ async function main(): Promise<void> {
   const hasItunes = itunes.music.length > 0 || itunes.apps.length > 0;
   const hasCloud = cloudKo.length > 0 || cloudEn.length > 0;
   const hasHN = hackernews.length > 0;
+  const hasYouTube = youtube.length > 0;
+  const hasReddit = reddit.length > 0;
   const snapshot: DailySnapshot = {
     generatedAt: now.toISOString(),
     date: formatDateKst(now),
@@ -328,6 +336,8 @@ async function main(): Promise<void> {
       ...(hasItunes && { itunes }),
       ...(hasCloud && { derived: { ko: cloudKo, en: cloudEn } }),
       ...(hasHN && { hackernews }),
+      ...(hasYouTube && { youtube }),
+      ...(hasReddit && { reddit }),
     },
   };
 

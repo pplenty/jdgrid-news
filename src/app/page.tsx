@@ -9,8 +9,10 @@ import { HackerNewsSection } from './_components/HackerNewsSection';
 import { ItunesSection } from './_components/ItunesSection';
 import { MoversSection } from './_components/MoversSection';
 import { NaverShoppingSection } from './_components/NaverShoppingSection';
+import { RedditSection } from './_components/RedditSection';
 import { TrendingHero } from './_components/TrendingHero';
 import { WikipediaSection } from './_components/WikipediaSection';
+import { YouTubeSection } from './_components/YouTubeSection';
 
 export default function HomePage() {
   const snapshot = loadLatest();
@@ -19,6 +21,8 @@ export default function HomePage() {
   const naver = snapshot.trends.naver;
   const itunes = snapshot.trends.itunes;
   const hn = snapshot.trends.hackernews;
+  const youtube = snapshot.trends.youtube;
+  const reddit = snapshot.trends.reddit;
 
   const moversKr = yesterday
     ? computeMovers(snapshot.trends.kr, yesterday.trends.kr)
@@ -43,7 +47,11 @@ export default function HomePage() {
 
       {itunes && <ItunesSection music={itunes.music} apps={itunes.apps} />}
 
+      {youtube && youtube.length > 0 && <YouTubeSection videos={youtube} />}
+
       {hn && hn.length > 0 && <HackerNewsSection stories={hn} />}
+
+      {reddit && reddit.length > 0 && <RedditSection posts={reddit} />}
 
       {naver && (
         <NaverShoppingSection

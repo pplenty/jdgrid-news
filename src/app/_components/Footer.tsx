@@ -20,6 +20,8 @@ const DATA_SOURCES = [
   { label: 'Naver DataLab', icon: '🛍', note: '쇼핑 카테고리·키워드' },
   { label: 'Apple iTunes Korea', icon: '🎵', note: '음악·앱 차트' },
   { label: 'Hacker News', icon: '🟧', note: 'front page · Algolia' },
+  { label: 'YouTube Korea', icon: '▶︎', note: 'mostPopular · API v3' },
+  { label: 'Reddit', icon: '🤖', note: 'r/all top · last 24h' },
   { label: '매체 RSS', icon: '📰', note: '국내외 12곳' },
 ];
 
