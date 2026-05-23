@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ExternalLink, Hash } from 'lucide-react';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
+import { EmptyState } from '@/app/_components/EmptyState';
 import { findArticlesByKeyword, findTrendByKeyword, loadLatest } from '@/lib/data';
 import type { GoogleNewsItem } from '@/lib/types';
 
@@ -82,9 +83,10 @@ export default async function KeywordPage({
       )}
 
       {ourArticles.length === 0 && googleArticles.length === 0 && (
-        <p className="py-12 text-center text-fg-subtle">
-          매칭된 기사가 없습니다. Google Trends가 새로 잡은 키워드일 수 있어요.
-        </p>
+        <EmptyState
+          title="매칭된 기사가 없어요"
+          description="Google Trends가 방금 잡은 키워드이거나, 우리가 수집한 매체 헤드라인에 등장하지 않은 경우입니다."
+        />
       )}
     </div>
   );

@@ -4,6 +4,7 @@
 import { TrendingUp } from 'lucide-react';
 
 import { CATEGORY_ICONS } from '@/app/_components/categoryIcons';
+import { EmptyState } from '@/app/_components/EmptyState';
 import { TrendStoryCard } from '@/app/_components/TrendStoryCard';
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
 import { loadLatest } from '@/lib/data';
@@ -33,9 +34,10 @@ export default function TrendsPage() {
       </header>
 
       {!stories || (stories.kr.length === 0 && stories.global.length === 0) ? (
-        <p className="py-12 text-center text-fg-subtle">
-          오늘은 카테고리별 트렌드가 잡히지 않았어요. Daily 키워드가 우리 매체와 매칭되지 않은 경우입니다.
-        </p>
+        <EmptyState
+          title="오늘은 카테고리별 트렌드가 잡히지 않았어요"
+          description="Daily 키워드가 우리 매체와 매칭되지 않았거나 Google realtime endpoint가 응답하지 않았어요."
+        />
       ) : (
         <div className="space-y-12">
           <GeoSection label="🇰🇷 국내" stories={stories.kr} />

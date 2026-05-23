@@ -3,6 +3,7 @@
 import { notFound } from 'next/navigation';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
+import { EmptyState } from '@/app/_components/EmptyState';
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
 import { getCategoryItems, loadLatest } from '@/lib/data';
 
@@ -33,7 +34,10 @@ export default async function CategoryPage({
       </header>
 
       {items.length === 0 ? (
-        <p className="py-12 text-center text-fg-subtle">오늘은 이 카테고리의 기사가 없습니다.</p>
+        <EmptyState
+          title="오늘은 이 카테고리의 기사가 없어요"
+          description="매체 RSS에서 이 카테고리로 분류된 기사가 잡히지 않았습니다. 내일 다시 확인해주세요."
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((a) => (
