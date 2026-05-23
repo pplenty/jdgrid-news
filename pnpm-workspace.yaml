@@ -5,3 +5,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+  # Cloudflare Pages 빌드 환경이 자동으로 wrangler를 inject하고 workerd 의존성
+  # postinstall을 실행하려 함. pnpm 11이 미허가 build script를 exit 1로 처리하므로
+  # workerd도 명시 허용 — 그렇지 않으면 Pages deploy 실패.
+  workerd: true
