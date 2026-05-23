@@ -40,7 +40,7 @@ function WikiColumn({ label, items }: { label: string; items: WikiTrend[] }) {
               href={w.url}
               target="_blank"
               rel="noreferrer noopener"
-              className="group flex items-center gap-2 rounded-md px-1.5 py-1 hover:bg-bg-subtle"
+              className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-bg-subtle"
             >
               <span className="w-5 shrink-0 text-center text-xs font-semibold tabular-nums text-fg-subtle">
                 {idx + 1}

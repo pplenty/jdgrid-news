@@ -69,7 +69,7 @@ function TrendRow({ trend, rank }: { trend: Trend; rank: number }) {
   return (
     <Link
       href={`/k/${encodeURIComponent(trend.keyword)}/`}
-      className="group flex items-center gap-3 rounded-md px-1.5 py-1.5 transition-colors hover:bg-bg"
+      className="group flex items-center gap-3 rounded-md px-1.5 py-1.5 transition-colors hover:bg-bg-subtle"
     >
       <span className="w-5 shrink-0 text-center text-xs font-semibold tabular-nums text-fg-subtle group-hover:text-fg-muted">
         {rank}

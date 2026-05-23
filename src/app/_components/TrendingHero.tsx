@@ -112,7 +112,7 @@ function BigCard({ rank, trend }: { rank: number; trend: Trend }) {
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-3xl font-black text-fg-subtle">
@@ -140,7 +140,10 @@ function SmallRow({ rank, trend }: { rank: number; trend: Trend }) {
   return (
     <Link
       href={`/k/${encodeURIComponent(trend.keyword)}/`}
-      className={cn('group flex items-center gap-3 rounded-md px-2 py-1.5', 'hover:bg-bg/80')}
+      className={cn(
+        'group flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors',
+        'hover:bg-bg-subtle',
+      )}
     >
       <span className="w-5 shrink-0 text-center text-sm font-bold tabular-nums text-fg-subtle">
         {rank}

@@ -62,7 +62,7 @@ function ArticleRow({ article }: { article: TrendArticle }) {
       href={article.url}
       target="_blank"
       rel="noreferrer noopener"
-      className="group flex items-center gap-2 border-t border-border-subtle px-3 py-2 first:border-t-0 hover:bg-bg-subtle"
+      className="group flex items-center gap-2 border-t border-border-subtle px-3 py-2 transition-colors first:border-t-0 hover:bg-bg-subtle"
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-fg-muted group-hover:text-fg">
