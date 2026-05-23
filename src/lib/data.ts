@@ -102,6 +102,30 @@ export function computeMediaCategoryMatrix(snapshot: DailySnapshot): MediaCatego
     .sort((a, b) => b.total - a.total);
 }
 
+/** Wikipedia top에서 keyword와 정확 일치(대소문자 무시) 항목 찾기. ADR-0028. */
+export function findWikiByKeyword(
+  snapshot: DailySnapshot,
+  keyword: string,
+): { ko?: import('./types').WikiTrend; en?: import('./types').WikiTrend } {
+  const needle = keyword.toLowerCase().trim();
+  const ko = snapshot.trends.wikipedia?.ko.find((w) => w.title.toLowerCase() === needle);
+  const en = snapshot.trends.wikipedia?.en.find((w) => w.title.toLowerCase() === needle);
+  return { ko, en };
+}
+
+/** Article들의 매체별 카운트 (내림차순). ADR-0028. */
+export function groupArticlesBySource(
+  articles: ReadonlyArray<Article>,
+): { name: string; count: number }[] {
+  const counts = new Map<string, number>();
+  for (const a of articles) {
+    counts.set(a.source.name, (counts.get(a.source.name) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export function findArticlesByKeyword(snapshot: DailySnapshot, keyword: string): Article[] {
   const needle = keyword.toLowerCase().trim();
   if (!needle) return [];
