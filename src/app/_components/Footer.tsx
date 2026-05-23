@@ -118,6 +118,11 @@ export function Footer() {
                 트렌드 상세
               </Link>
             </li>
+            <li>
+              <Link href="/analytics/" className="hover:text-fg">
+                Analytics
+              </Link>
+            </li>
             <li className="flex items-center gap-1.5 pt-1">
               <Mail size={11} aria-hidden />
               <a href="mailto:support@jdgrid.com" className="hover:text-fg">

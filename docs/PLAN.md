@@ -226,6 +226,7 @@
 - [ADR-0021 — Main Page Re-balance: 트렌드를 hero 영역으로](./adr/0021-trend-as-main-hero.md)
 - [ADR-0022 — Rebrand to trends: 도메인·정체성·페이지 구조·별자리 모티프](./adr/0022-rebrand-to-trends.md)
 - [ADR-0023 — Analytics v1: Movers + Category Comparison](./adr/0023-analytics-v1.md)
+- [ADR-0024 — Main Page Cleanup: 콘텐츠 vs 분석 분리 (/analytics 신설)](./adr/0024-main-page-cleanup.md)
 
 ---
 

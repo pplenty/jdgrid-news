@@ -4,7 +4,16 @@
 // 모바일은 ClientShell의 drawer 상태로 열림.
 
 import Link from 'next/link';
-import { ArrowRight, Hash, LayoutGrid, TrendingUp, X } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  Hash,
+  LayoutGrid,
+  Newspaper,
+  Sparkles,
+  TrendingUp,
+  X,
+} from 'lucide-react';
 
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
 import type { SidebarData } from '@/lib/data';
@@ -68,16 +77,26 @@ export function Sidebar({
         </div>
 
         <nav className="px-3 pt-4 pb-6">
-          <div className="flex items-center justify-between">
-            <SectionHeader icon={LayoutGrid}>카테고리</SectionHeader>
-            <Link
-              href="/headlines/"
-              onClick={onClose}
-              className="inline-flex items-center gap-0.5 px-2 text-[10px] font-medium text-fg-subtle hover:text-fg"
-            >
-              Headlines <ArrowRight size={10} />
-            </Link>
-          </div>
+          {/* 빠른 이동 — ADR-0024 */}
+          <ul className="mb-6 space-y-0.5">
+            <li>
+              <QuickLink href="/headlines/" icon={Newspaper} onNavigate={onClose}>
+                Headlines
+              </QuickLink>
+            </li>
+            <li>
+              <QuickLink href="/trends/" icon={Sparkles} onNavigate={onClose}>
+                Trends 상세
+              </QuickLink>
+            </li>
+            <li>
+              <QuickLink href="/analytics/" icon={BarChart3} onNavigate={onClose}>
+                Analytics
+              </QuickLink>
+            </li>
+          </ul>
+
+          <SectionHeader icon={LayoutGrid}>카테고리</SectionHeader>
           <ul className="mt-2 space-y-0.5">
             {CATEGORY_IDS.map((id) => (
               <li key={id}>
@@ -133,6 +152,29 @@ function SectionHeader({
       <Icon size={12} className="opacity-70" />
       <span>{children}</span>
     </div>
+  );
+}
+
+function QuickLink({
+  href,
+  icon: Icon,
+  children,
+  onNavigate,
+}: {
+  href: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  children: React.ReactNode;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-fg-muted transition-colors hover:bg-bg-subtle hover:text-fg"
+    >
+      <Icon size={15} className="shrink-0 text-fg-subtle group-hover:text-fg-muted" />
+      <span className="truncate">{children}</span>
+    </Link>
   );
 }
 
