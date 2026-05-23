@@ -22,6 +22,13 @@ export function loadByDate(date: string): DailySnapshot | null {
   }
 }
 
+/** 주어진 snapshot의 어제 (가장 가까운 이전 일자) snapshot — 없으면 null. */
+export function loadPrevious(currentDate: string): DailySnapshot | null {
+  const dates = listSnapshotDates(); // 최신 우선
+  const earlier = dates.find((d) => d < currentDate);
+  return earlier ? loadByDate(earlier) : null;
+}
+
 /** data/ 안의 YYYY-MM-DD.json 파일 일자 목록 (최신 우선). */
 export function listSnapshotDates(): string[] {
   try {
