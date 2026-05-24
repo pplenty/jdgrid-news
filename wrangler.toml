@@ -1,0 +1,14 @@
+# Cloudflare Workers Static Assets — ADR-0029.
+# 우리는 정적 export(output: 'export', ADR-0002)라 서버 코드(main) 없음.
+# wrangler가 out/ 디렉토리를 assets로 업로드 → 정적 호스팅.
+#
+# Cloudflare project name은 운영자가 dashboard에서 사용 중인 이름과 맞춰야 함.
+# 변경 후 wrangler deploy 시 name 충돌 없는지 확인.
+
+name = "trends"
+compatibility_date = "2026-05-24"
+
+[assets]
+directory = "./out"
+# Next.js 정적 export는 404 케이스를 404.html로 생성 — Workers Assets가 자동 매핑.
+not_found_handling = "404-page"

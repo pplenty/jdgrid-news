@@ -231,6 +231,7 @@
 - [ADR-0026 — YouTube Korea + Reddit Top: 영상·커뮤니티 source](./adr/0026-youtube-reddit-sources.md)
 - [ADR-0027 — Ops: 실패 매체 교체 + dedupe v1 (Jaccard 0.8)](./adr/0027-ops-source-cleanup-dedupe.md)
 - [ADR-0028 — Keyword Detail: signals + Wikipedia + 매체 분포](./adr/0028-keyword-detail-aggregation.md)
+- [ADR-0029 — Cloudflare Workers Static Assets (ADR-0003 모드 supersede)](./adr/0029-cloudflare-workers-static-assets.md)
 
 ---
 
