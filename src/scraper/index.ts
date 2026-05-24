@@ -222,15 +222,26 @@ function writeSnapshot(snapshot: DailySnapshot): void {
   writeFileSync(latestPath, payload, 'utf8');
 }
 
+// phase별 timing 로그 helper — 외부 API 느려질 때 어느 단계인지 진단.
+async function timed<T>(label: string, p: Promise<T>): Promise<T> {
+  const t0 = Date.now();
+  const result = await p;
+  console.log(`[scrape:${label}] ${Date.now() - t0}ms`);
+  return result;
+}
+
 async function main(): Promise<void> {
   const startedAt = Date.now();
   console.log(`[scrape] start — ${SOURCES.length} sources`);
 
   // 1. RSS 병렬 fetch
+  const rssStart = Date.now();
   const fetched = await Promise.all(SOURCES.map(fetchSource));
   const okCount = fetched.filter((arr) => arr.length > 0).length;
   const items = fetched.flat();
-  console.log(`[scrape] fetched ${items.length} items from ${okCount}/${SOURCES.length} sources`);
+  console.log(
+    `[scrape:rss] ${Date.now() - rssStart}ms — ${items.length} items from ${okCount}/${SOURCES.length} sources`,
+  );
 
   // 2. 정규화
   const articles: Article[] = [];
@@ -262,6 +273,8 @@ async function main(): Promise<void> {
 
   // 7. 외부 신호 병렬 fetch: Google Daily RSS, Google realtime API(현재 404),
   //    Wikipedia Pageviews 한·영 (ADR-0018), Naver DataLab 쇼핑 (ADR-0020, env 없으면 빈 결과).
+  //    각 fetcher 자체 graceful skip → Promise.all 안전.
+  const signalsStart = Date.now();
   const [
     googleKr,
     googleGlobal,
@@ -276,19 +289,20 @@ async function main(): Promise<void> {
     youtube,
     reddit,
   ] = await Promise.all([
-    fetchGoogleTrends('KR'),
-    fetchGoogleTrends('US'),
-    fetchRealtimeStoriesByGeo('KR'),
-    fetchRealtimeStoriesByGeo('global'),
-    fetchWikipediaTop('ko.wikipedia'),
-    fetchWikipediaTop('en.wikipedia'),
-    fetchNaverCategoryTrends(),
-    fetchNaverKeywordsByCategory(),
-    fetchItunesKorea(),
-    fetchHackerNewsTop(),
-    fetchYouTubeKorea(),
-    fetchRedditTop(),
+    timed('google-kr', fetchGoogleTrends('KR')),
+    timed('google-us', fetchGoogleTrends('US')),
+    timed('realtime-kr', fetchRealtimeStoriesByGeo('KR')),
+    timed('realtime-global', fetchRealtimeStoriesByGeo('global')),
+    timed('wiki-ko', fetchWikipediaTop('ko.wikipedia')),
+    timed('wiki-en', fetchWikipediaTop('en.wikipedia')),
+    timed('naver-categories', fetchNaverCategoryTrends()),
+    timed('naver-keywords', fetchNaverKeywordsByCategory()),
+    timed('itunes', fetchItunesKorea()),
+    timed('hackernews', fetchHackerNewsTop()),
+    timed('youtube', fetchYouTubeKorea()),
+    timed('reddit', fetchRedditTop()),
   ]);
+  console.log(`[scrape:signals] ${Date.now() - signalsStart}ms total`);
 
   // 8. Daily 트렌드 통합 + 기사 매칭 (정확 부분문자열, ADR-0014)
   const mergedKr = mergeTrends(googleKr, derivedToTrend(derivedKr), TREND_TOP_N);
