@@ -21,7 +21,9 @@ jobs:
   scrape:
     name: Scrape and commit
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 외부 API 12종 병렬 + RSS 24 source + Naver 순차 호출 누적 — 워스트 케이스 흡수.
+    # 2026-05-23 run이 10m20s에 cancelled 됐기에 여유 확보.
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
