@@ -1,6 +1,5 @@
 // /k/[keyword] — ADR-0028. 키워드 통합 카드 (signals + Wikipedia + 매체 분포 + 기존 두 섹션).
 
-import Link from 'next/link';
 import { BookOpen, ExternalLink, Globe2, Hash, Newspaper, TrendingUp } from 'lucide-react';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';

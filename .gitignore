@@ -33,3 +33,6 @@ scrape-*.log
 # ide
 .vscode/
 .idea/
+
+# claude code
+.claude/
