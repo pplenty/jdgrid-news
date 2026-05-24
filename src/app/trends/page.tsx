@@ -12,7 +12,7 @@ import type { TrendStory } from '@/lib/types';
 import { formatDateLabel } from '@/lib/utils';
 
 export const metadata = {
-  title: '트렌드 상세 — news',
+  title: '트렌드 상세 — trends',
   description: '카테고리별 트렌드 (Google realtime + 자체 분류).',
 };
 
