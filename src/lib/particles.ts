@@ -44,4 +44,5 @@ export const KO_PARTICLES: readonly string[] = [
   '며',
   '나',
   '랑',
+  '들', // 복수 접미사. 엄밀히 조사 아니지만 stripping 효과 동일 ("후보들" → "후보")
 ] as const;
