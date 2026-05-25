@@ -119,39 +119,42 @@ type KeywordsResponse = {
 export async function fetchNaverKeywordsByCategory(): Promise<Record<string, NaverShoppingKeyword[]>> {
   const creds = getCredentials();
   if (!creds) return {};
-  const out: Record<string, NaverShoppingKeyword[]> = {};
 
-  for (const cat of NAVER_CATEGORIES) {
-    const keywords: NaverShoppingKeyword[] = [];
-    for (let i = 0; i < cat.keywords.length; i += KEYWORD_CHUNK) {
-      const chunk = cat.keywords.slice(i, i + KEYWORD_CHUNK);
-      const body = {
-        startDate: dateString(HISTORY_DAYS),
-        endDate: dateString(1),
-        timeUnit: 'date',
-        category: cat.code,
-        keyword: chunk.map((k) => ({ name: k, param: [k] })),
-      };
-      const json = await naverFetch<KeywordsResponse>('/category/keywords', body, creds);
-      if (!json?.results) continue;
-      for (const r of json.results) {
-        const history = (r.data ?? []).map(toHistoryPoint).filter(isHistoryPoint);
-        const last = history.at(-1)?.views ?? 0;
-        keywords.push({
-          category: cat.alias,
-          categoryCode: cat.code,
-          keyword: r.title ?? '',
-          score: last,
-          history,
-        });
+  // 카테고리는 병렬, 카테고리 안의 chunk는 순차 (rate limit 보수적).
+  // 직렬이면 5 cat × 2 chunk × 15s timeout = 150s 워스트 → 병렬화로 30s로 단축.
+  // 2026-05-23/24 cron timeout (10m/15m) 진단의 일환.
+  const entries = await Promise.all(
+    NAVER_CATEGORIES.map(async (cat): Promise<[string, NaverShoppingKeyword[]]> => {
+      const keywords: NaverShoppingKeyword[] = [];
+      for (let i = 0; i < cat.keywords.length; i += KEYWORD_CHUNK) {
+        const chunk = cat.keywords.slice(i, i + KEYWORD_CHUNK);
+        const body = {
+          startDate: dateString(HISTORY_DAYS),
+          endDate: dateString(1),
+          timeUnit: 'date',
+          category: cat.code,
+          keyword: chunk.map((k) => ({ name: k, param: [k] })),
+        };
+        const json = await naverFetch<KeywordsResponse>('/category/keywords', body, creds);
+        if (!json?.results) continue;
+        for (const r of json.results) {
+          const history = (r.data ?? []).map(toHistoryPoint).filter(isHistoryPoint);
+          const last = history.at(-1)?.views ?? 0;
+          keywords.push({
+            category: cat.alias,
+            categoryCode: cat.code,
+            keyword: r.title ?? '',
+            score: last,
+            history,
+          });
+        }
       }
-    }
-    // 어제 점수로 정렬 → top N.
-    keywords.sort((a, b) => b.score - a.score);
-    out[cat.alias] = keywords.slice(0, TOP_PER_CATEGORY);
-  }
+      keywords.sort((a, b) => b.score - a.score);
+      return [cat.alias, keywords.slice(0, TOP_PER_CATEGORY)];
+    }),
+  );
 
-  return out;
+  return Object.fromEntries(entries);
 }
 
 function toHistoryPoint(d: { period?: string; ratio?: number }): HistoryPoint | null {
