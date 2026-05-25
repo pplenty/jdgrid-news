@@ -367,7 +367,14 @@ async function main(): Promise<void> {
   );
 }
 
-main().catch((err) => {
-  console.error('[scrape] failed', err);
-  process.exit(1);
-});
+main()
+  .then(() => {
+    // 명시적 종료. fetch(undici) keepAlive socket + 실패한 fetcher의 미정리 connection이
+    // 남아있으면 Node가 자연 종료를 못 하고 hang → GitHub Actions job timeout.
+    // 2026-05-25 cron이 scrape 7.2s 완료 후에도 15m timeout cancel 됐던 원인.
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error('[scrape] failed', err);
+    process.exit(1);
+  });
