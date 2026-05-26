@@ -50,10 +50,12 @@ export async function fetchWikipediaTop(
   project: 'ko.wikipedia' | 'en.wikipedia',
   limit = 20,
 ): Promise<WikiTrend[]> {
-  // Wikimedia API는 어제 데이터가 늦게 집계되는 경우가 잦음 — 1~3일 전 순서로 retry.
+  // Wikimedia API는 어제 데이터가 늦게 집계되는 경우가 잦음 — 1~4일 전 순서로 retry.
+  // 2026-05-25 cron 0 entries (1·2·3일 전 모두 빈) 관찰 후 윈도우 확장.
+  // 4일 전은 "어제 top" 표시로는 stale 하지만 페이지 비는 것보단 정보 유지.
   let top: WikiTrend[] = [];
   let anchorDaysAgo = 1;
-  for (const daysAgo of [1, 2, 3]) {
+  for (const daysAgo of [1, 2, 3, 4]) {
     top = await tryDate(project, daysAgo, limit);
     if (top.length > 0) {
       anchorDaysAgo = daysAgo;

@@ -4,7 +4,10 @@ import { cleanText } from '@/lib/normalize';
 import type { RedditPost } from '@/lib/types';
 
 const ENDPOINT = 'https://www.reddit.com/r/all/top.json?t=day&limit=25';
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
+// Reddit User-Agent 정책: <platform>:<app-id>:<version> 형식 권장.
+// 2026-05-25 GitHub Actions cron에서 HTTP 403 — datacenter IP 차단 가능성 + UA 형식 부적합 의심.
+// 정상 형식 시도. 효과 없으면 ADR-0026 일부 supersede 후보 (source 제거).
+const USER_AGENT = 'web:jdgrid-trends:v0.1 (+https://trends.jdgrid.com)';
 const FETCH_TIMEOUT_MS = 15_000;
 const REDDIT_BASE = 'https://www.reddit.com';
 
