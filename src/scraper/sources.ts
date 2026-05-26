@@ -142,58 +142,63 @@ export const SOURCES: readonly Source[] = [
   },
 
   // ─── 국내 (한국어, 6개 매체) ───────────────────────────────────────────
-  // 연합뉴스 — 카테고리별 RSS. URL은 운영 시 검증·보정.
+  // ADR-0030: 연합뉴스 6 source 모두 ECONNRESET (로컬+CI) → 동아 3 + 경향 3 으로 분산 대체.
+  // 매핑: 동아 = politics/society/culture, 경향 = world/business/sports.
+  // society 카테고리는 ADR-0008 에 없어 world 로 매핑 (yonhap-society 와 동일 hack).
+
+  // 동아일보 — rss.donga.com, 카테고리별 50 items.
   {
-    id: 'yonhap-politics',
-    name: '연합뉴스',
-    homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/politics.xml',
+    id: 'donga-politics',
+    name: '동아일보',
+    homepage: 'https://www.donga.com',
+    url: 'https://rss.donga.com/politics.xml',
     category: 'politics',
     lang: 'ko',
     weight: 1,
   },
   {
-    id: 'yonhap-business',
-    name: '연합뉴스',
-    homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/economy.xml',
+    id: 'donga-society',
+    name: '동아일보',
+    homepage: 'https://www.donga.com',
+    url: 'https://rss.donga.com/national.xml',
+    category: 'world',
+    lang: 'ko',
+    weight: 1,
+  },
+  {
+    id: 'donga-culture',
+    name: '동아일보',
+    homepage: 'https://www.donga.com',
+    url: 'https://rss.donga.com/culture.xml',
+    category: 'culture',
+    lang: 'ko',
+    weight: 1,
+  },
+
+  // 경향신문 — khan.co.kr/rss/rssdata, 카테고리별 50 items.
+  {
+    id: 'khan-world',
+    name: '경향신문',
+    homepage: 'https://www.khan.co.kr',
+    url: 'https://www.khan.co.kr/rss/rssdata/kh_world.xml',
+    category: 'world',
+    lang: 'ko',
+    weight: 1,
+  },
+  {
+    id: 'khan-business',
+    name: '경향신문',
+    homepage: 'https://www.khan.co.kr',
+    url: 'https://www.khan.co.kr/rss/rssdata/economy_news.xml',
     category: 'business',
     lang: 'ko',
     weight: 1,
   },
   {
-    id: 'yonhap-world',
-    name: '연합뉴스',
-    homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/international.xml',
-    category: 'world',
-    lang: 'ko',
-    weight: 1,
-  },
-  // ADR-0027: yna.co.kr/rss/itscience.xml 폐지 → society·culture·sports로 다양화.
-  {
-    id: 'yonhap-society',
-    name: '연합뉴스',
-    homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/society.xml',
-    category: 'world',
-    lang: 'ko',
-    weight: 1,
-  },
-  {
-    id: 'yonhap-culture',
-    name: '연합뉴스',
-    homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/culture.xml',
-    category: 'culture',
-    lang: 'ko',
-    weight: 1,
-  },
-  {
-    id: 'yonhap-sports',
-    name: '연합뉴스',
-    homepage: 'https://www.yna.co.kr',
-    url: 'https://www.yna.co.kr/rss/sports.xml',
+    id: 'khan-sports',
+    name: '경향신문',
+    homepage: 'https://www.khan.co.kr',
+    url: 'https://www.khan.co.kr/rss/rssdata/kh_sports.xml',
     category: 'sports',
     lang: 'ko',
     weight: 1,

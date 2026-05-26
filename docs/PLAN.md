@@ -232,6 +232,7 @@
 - [ADR-0027 — Ops: 실패 매체 교체 + dedupe v1 (Jaccard 0.8)](./adr/0027-ops-source-cleanup-dedupe.md)
 - [ADR-0028 — Keyword Detail: signals + Wikipedia + 매체 분포](./adr/0028-keyword-detail-aggregation.md)
 - [ADR-0029 — Cloudflare Workers Static Assets (ADR-0003 모드 supersede)](./adr/0029-cloudflare-workers-static-assets.md)
+- [ADR-0030 — Yonhap 6 source 제거 + 동아·경향 분산 대체 (ADR-0013 부분 supersede)](./adr/0030-yonhap-replacement-donga-khan.md)
 
 ---
 
