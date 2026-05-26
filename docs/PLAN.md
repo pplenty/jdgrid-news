@@ -96,22 +96,23 @@
 
 ---
 
-## 5. 카테고리 (확정 — [ADR-0008](./adr/0008-category-taxonomy.md))
+## 5. 카테고리 (확정 — [ADR-0008](./adr/0008-category-taxonomy.md) + [ADR-0032](./adr/0032-society-category.md))
 
-영문 매체(BBC, Reuters, AP 등) RSS 분류에 정렬한 8개 카테고리.
+영문 매체(BBC, Reuters, AP 등) RSS 분류 + 한국 매체 사회 카테고리 합한 9개.
 
 | id          | label (KR) | label (EN) | 비고                                     |
 | ----------- | ---------- | ---------- | ---------------------------------------- |
 | `top`       | 종합       | Top        | 각 카테고리 상위 N건을 가중 집계해 자동 생성 |
 | `world`     | 세계       | World      | 국제 일반                                |
 | `politics`  | 정치       | Politics   | 국내·국제 정치 통합                      |
+| `society`   | 사회       | Society    | 국내 사회·사건사고·교육·복지 (ADR-0032)  |
 | `business`  | 경제       | Business   | 산업·금융·시장                           |
 | `tech`      | 기술       | Tech       | 빅테크·AI·SW                             |
 | `science`   | 과학       | Science    | 연구·환경·기후 포함                      |
 | `sports`    | 스포츠     | Sports     | 국내·해외                                |
 | `culture`   | 문화       | Culture    | 예술·연예·라이프스타일                   |
 
-- **단일 분류** — 한 기사 = 한 카테고리. 충돌 시 우선순위: `politics > business > world > tech > science > sports > culture`.
+- **단일 분류** — 한 기사 = 한 카테고리. 충돌 시 우선순위: `politics > society > business > world > tech > science > sports > culture`.
 - **매체 RSS → 우리 카테고리** 매핑은 `scraper/sources.ts`에 선언적으로 박는다.
 - 매체가 통합 RSS만 제공하면 `top` 후보로만 사용 (가중 집계 입력). 룰 기반 분류는 v1 이후.
 
@@ -234,6 +235,7 @@
 - [ADR-0029 — Cloudflare Workers Static Assets (ADR-0003 모드 supersede)](./adr/0029-cloudflare-workers-static-assets.md)
 - [ADR-0030 — Yonhap 6 source 제거 + 동아·경향 분산 대체 (ADR-0013 부분 supersede)](./adr/0030-yonhap-replacement-donga-khan.md)
 - [ADR-0031 — cron 2-time trigger (ADR-0006 supersede)](./adr/0031-cron-2time-trigger.md)
+- [ADR-0032 — society 카테고리 추가 (ADR-0008 부분 supersede, 8→9 카테고리)](./adr/0032-society-category.md)
 
 ---
 

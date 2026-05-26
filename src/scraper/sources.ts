@@ -161,7 +161,7 @@ export const SOURCES: readonly Source[] = [
     name: '동아일보',
     homepage: 'https://www.donga.com',
     url: 'https://rss.donga.com/national.xml',
-    category: 'world',
+    category: 'society',
     lang: 'ko',
     weight: 1,
   },

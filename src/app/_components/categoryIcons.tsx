@@ -9,6 +9,7 @@ import {
   Palette,
   Star,
   Trophy,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -18,6 +19,7 @@ export const CATEGORY_ICONS: Record<CategoryId, LucideIcon> = {
   top: Star,
   world: Globe,
   politics: Landmark,
+  society: Users,
   business: Briefcase,
   tech: Cpu,
   science: FlaskConical,
