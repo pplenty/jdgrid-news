@@ -233,6 +233,7 @@
 - [ADR-0028 — Keyword Detail: signals + Wikipedia + 매체 분포](./adr/0028-keyword-detail-aggregation.md)
 - [ADR-0029 — Cloudflare Workers Static Assets (ADR-0003 모드 supersede)](./adr/0029-cloudflare-workers-static-assets.md)
 - [ADR-0030 — Yonhap 6 source 제거 + 동아·경향 분산 대체 (ADR-0013 부분 supersede)](./adr/0030-yonhap-replacement-donga-khan.md)
+- [ADR-0031 — cron 2-time trigger (ADR-0006 supersede)](./adr/0031-cron-2time-trigger.md)
 
 ---
 
