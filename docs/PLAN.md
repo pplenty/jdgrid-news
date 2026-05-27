@@ -236,6 +236,8 @@
 - [ADR-0030 — Yonhap 6 source 제거 + 동아·경향 분산 대체 (ADR-0013 부분 supersede)](./adr/0030-yonhap-replacement-donga-khan.md)
 - [ADR-0031 — cron 2-time trigger (ADR-0006 supersede)](./adr/0031-cron-2time-trigger.md)
 - [ADR-0032 — society 카테고리 추가 (ADR-0008 부분 supersede, 8→9 카테고리)](./adr/0032-society-category.md)
+- [ADR-0033 — scraper HTTP 계층 공통화 + retry/backoff (fetch 유틸·config·KST 통일)](./adr/0033-scraper-http-layer-retry.md)
+- [ADR-0034 — 단위 테스트 도입 (Vitest, 33 tests)](./adr/0034-unit-testing-vitest.md)
 
 ---
 
