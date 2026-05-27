@@ -25,6 +25,13 @@ export type FetchOptions = {
   body?: string;
 };
 
+// 일시적 실패로 보고 재시도하는 status — 429(rate limit) + 5xx(서버). 4xx는 재시도 무의미.
+const isRetryableStatus = (status: number): boolean => status === 429 || status >= 500;
+const MAX_RETRIES = 2; // 총 3회 시도
+const RETRY_BASE_MS = 400; // exponential backoff: 400ms → 800ms
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function request(url: string, opts: FetchOptions): Promise<Response> {
   const {
     userAgent = USER_AGENT,
@@ -34,7 +41,7 @@ async function request(url: string, opts: FetchOptions): Promise<Response> {
     headers = {},
     body,
   } = opts;
-  const res = await fetch(url, {
+  const init: RequestInit = {
     method,
     headers: {
       'User-Agent': userAgent,
@@ -42,13 +49,29 @@ async function request(url: string, opts: FetchOptions): Promise<Response> {
       ...headers,
     },
     body,
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!res.ok) {
-    const errBody = await res.text().catch(() => '');
-    throw new HttpError(res.status, url, errBody);
+  };
+
+  // 429/5xx/네트워크·timeout 에러는 exponential backoff 재시도. 4xx(429 제외)는 즉시 throw.
+  for (let attempt = 0; ; attempt++) {
+    let res: Response | undefined;
+    let networkErr: unknown;
+    try {
+      res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+    } catch (err) {
+      networkErr = err; // 네트워크 실패 또는 AbortSignal.timeout
+    }
+
+    if (res) {
+      if (res.ok) return res;
+      const errBody = await res.text().catch(() => '');
+      const httpErr = new HttpError(res.status, url, errBody);
+      if (!isRetryableStatus(res.status) || attempt >= MAX_RETRIES) throw httpErr;
+    } else if (attempt >= MAX_RETRIES) {
+      throw networkErr;
+    }
+
+    await sleep(RETRY_BASE_MS * 2 ** attempt);
   }
-  return res;
 }
 
 /** 텍스트 응답 (XML 등). 실패 시 throw. */
