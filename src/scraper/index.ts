@@ -23,6 +23,7 @@ import { cleanText, idFromUrl, normalizeIsoDate } from '@/lib/normalize';
 import type { Article, CategoryBucket, DailySnapshot, Trend, TrendStory } from '@/lib/types';
 
 import { trendsToInferredStories } from './auto-categorize';
+import { FETCH_TIMEOUT_MS, USER_AGENT } from './config';
 import { dedupeArticles } from './dedupe';
 import { fetchRealtimeStoriesByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
@@ -39,8 +40,6 @@ import { fetchYouTubeKorea } from './youtube';
 const TOP_PER_CATEGORY = 12;
 const TOP_AGGREGATE = 8;
 const TREND_TOP_N = 20;
-const FETCH_TIMEOUT_MS = 15_000;
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
 
 const DATA_DIR = resolve(process.cwd(), 'data');
 

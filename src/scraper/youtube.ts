@@ -4,9 +4,9 @@
 import { cleanText } from '@/lib/normalize';
 import type { YouTubeTrend } from '@/lib/types';
 
+import { errMessage, fetchJson } from './http';
+
 const BASE = 'https://www.googleapis.com/youtube/v3/videos';
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
-const FETCH_TIMEOUT_MS = 15_000;
 const REGION = 'KR';
 const LIMIT = 20;
 
@@ -44,26 +44,14 @@ export async function fetchYouTubeKorea(): Promise<YouTubeTrend[]> {
 
   const url = `${BASE}?part=snippet,statistics&chart=mostPopular&regionCode=${REGION}&maxResults=${LIMIT}&key=${encodeURIComponent(key)}`;
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      console.warn(`[scrape] youtube HTTP ${res.status} ${txt.slice(0, 120)}`);
-      return [];
-    }
-    const data = (await res.json()) as RawResponse;
+    const data = await fetchJson<RawResponse>(url);
     if (data.error) {
       console.warn(`[scrape] youtube error: ${data.error.message}`);
       return [];
     }
-    return (data.items ?? [])
-      .map(toTrend)
-      .filter((t): t is YouTubeTrend => t !== null);
+    return (data.items ?? []).map(toTrend).filter((t): t is YouTubeTrend => t !== null);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] youtube failed: ${msg}`);
+    console.warn(`[scrape] youtube failed: ${errMessage(err)}`);
     return [];
   }
 }

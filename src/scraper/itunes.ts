@@ -4,9 +4,9 @@
 
 import type { ItunesTrend } from '@/lib/types';
 
+import { errMessage, fetchJson } from './http';
+
 const BASE = 'https://rss.applemarketingtools.com/api/v2/kr';
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
-const FETCH_TIMEOUT_MS = 15_000;
 const LIMIT = 20;
 
 type RawItunesItem = {
@@ -23,21 +23,11 @@ type RawResponse = {
 };
 
 async function fetchChart(path: string): Promise<RawItunesItem[]> {
-  const url = `${BASE}${path}`;
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) {
-      console.warn(`[scrape] itunes ${path} HTTP ${res.status}`);
-      return [];
-    }
-    const data = (await res.json()) as RawResponse;
+    const data = await fetchJson<RawResponse>(`${BASE}${path}`);
     return data.feed?.results ?? [];
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] itunes ${path} failed: ${msg}`);
+    console.warn(`[scrape] itunes ${path} failed: ${errMessage(err)}`);
     return [];
   }
 }

@@ -5,11 +5,12 @@
 import { kstDateParts } from '@/lib/date';
 import type { HistoryPoint, WikiTrend } from '@/lib/types';
 
+import { WIKIPEDIA_USER_AGENT } from './config';
+import { errMessage, fetchJson, HttpError } from './http';
+
 const BASE_URL = 'https://wikimedia.org/api/rest_v1/metrics/pageviews/top';
 const PER_ARTICLE_URL =
   'https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article';
-const USER_AGENT = 'jdgrid-trends/0.1 (mailto:support@jdgrid.com)';
-const FETCH_TIMEOUT_MS = 15_000;
 const HISTORY_DAYS = 7;
 const HISTORY_TOP_N = 10;
 const HISTORY_CHUNK = 5;
@@ -91,12 +92,9 @@ async function fetchArticleHistory(
   const endStr = `${end.year}${end.month}${end.day}`;
   const url = `${PER_ARTICLE_URL}/${project}/all-access/all-agents/${articleKey}/daily/${startStr}/${endStr}`;
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    const data = await fetchJson<{ items?: Array<{ timestamp?: string; views?: number }> }>(url, {
+      userAgent: WIKIPEDIA_USER_AGENT,
     });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { items?: Array<{ timestamp?: string; views?: number }> };
     return (data.items ?? [])
       .filter((p): p is { timestamp: string; views: number } => !!p.timestamp && typeof p.views === 'number')
       .map((p) => ({
@@ -117,16 +115,7 @@ async function tryDate(
   const { year, month, day } = kstDateParts(daysAgo);
   const url = `${BASE_URL}/${project}/all-access/${year}/${month}/${day}`;
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) {
-      // 데이터 없음(404)은 다음 날짜로 retry — 로그 안 찍음.
-      if (res.status !== 404) console.warn(`[scrape] wikipedia ${project} HTTP ${res.status}`);
-      return [];
-    }
-    const data = (await res.json()) as RawResponse;
+    const data = await fetchJson<RawResponse>(url, { userAgent: WIKIPEDIA_USER_AGENT });
     const raw = data.items?.[0]?.articles ?? [];
     const lang = project.startsWith('ko') ? 'ko' : 'en';
     return raw
@@ -135,8 +124,9 @@ async function tryDate(
       .slice(0, limit)
       .map((a) => toWikiTrend(a.article, a.views, lang));
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] wikipedia ${project} -${daysAgo}d failed: ${msg}`);
+    // 데이터 없음(404)은 다음 날짜로 retry — 로그 안 찍음.
+    if (err instanceof HttpError && err.status === 404) return [];
+    console.warn(`[scrape] wikipedia ${project} -${daysAgo}d failed: ${errMessage(err)}`);
     return [];
   }
 }

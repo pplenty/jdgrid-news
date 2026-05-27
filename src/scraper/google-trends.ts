@@ -7,9 +7,9 @@ import { XMLParser } from 'fast-xml-parser';
 import { cleanText } from '@/lib/normalize';
 import type { GoogleNewsItem, Trend } from '@/lib/types';
 
+import { errMessage, fetchText } from './http';
+
 const TRENDS_URL = 'https://trends.google.com/trending/rss';
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
-const FETCH_TIMEOUT_MS = 15_000;
 
 type RawNewsItem = {
   'ht:news_item_title'?: string;
@@ -44,15 +44,7 @@ const parser = new XMLParser({
 export async function fetchGoogleTrends(geo: 'KR' | 'US', limit = 20): Promise<Trend[]> {
   const url = `${TRENDS_URL}?geo=${geo}`;
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/rss+xml,*/*' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) {
-      console.warn(`[scrape] google trends ${geo} HTTP ${res.status}`);
-      return [];
-    }
-    const xml = await res.text();
+    const xml = await fetchText(url, { accept: 'application/rss+xml,*/*' });
     const parsed = parser.parse(xml) as RawFeed;
     const items = parsed?.rss?.channel?.item ?? [];
     return items
@@ -60,8 +52,7 @@ export async function fetchGoogleTrends(geo: 'KR' | 'US', limit = 20): Promise<T
       .map(toTrend)
       .filter((t): t is Trend => t.keyword !== '');
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] google trends ${geo} failed: ${msg}`);
+    console.warn(`[scrape] google trends ${geo} failed: ${errMessage(err)}`);
     return [];
   }
 }
@@ -94,21 +85,30 @@ function toNewsItem(raw: RawNewsItem): GoogleNewsItem | null {
   };
 }
 
+// 대략 트래픽 문자열의 하한값 → 점수. 위에서부터 처음 충족하는 구간 채택.
+const TRAFFIC_SCORE_TABLE: ReadonlyArray<readonly [min: number, score: number]> = [
+  [10_000_000, 1],
+  [1_000_000, 0.85],
+  [500_000, 0.7],
+  [100_000, 0.55],
+  [50_000, 0.4],
+  [10_000, 0.3],
+];
+const UNKNOWN_TRAFFIC_SCORE = 0.5; // traffic 문자열이 없거나 파싱 실패
+const MIN_TRAFFIC_SCORE = 0.2; // 테이블 하한 미만
+
 /** "200K+" / "1M+" → 대략적 점수 (0~1로 정규화). */
-function trafficToScore(traffic?: string): number {
-  if (!traffic) return 0.5;
+export function trafficToScore(traffic?: string): number {
+  if (!traffic) return UNKNOWN_TRAFFIC_SCORE;
   const s = traffic.replace(/[+,\s]/g, '');
   const m = s.match(/^(\d+(?:\.\d+)?)([KkMm]?)/);
-  if (!m) return 0.5;
+  if (!m) return UNKNOWN_TRAFFIC_SCORE;
   const n = parseFloat(m[1]!);
   const unit = m[2]?.toUpperCase();
   const mult = unit === 'M' ? 1_000_000 : unit === 'K' ? 1_000 : 1;
   const value = n * mult;
-  if (value >= 10_000_000) return 1;
-  if (value >= 1_000_000) return 0.85;
-  if (value >= 500_000) return 0.7;
-  if (value >= 100_000) return 0.55;
-  if (value >= 50_000) return 0.4;
-  if (value >= 10_000) return 0.3;
-  return 0.2;
+  for (const [min, score] of TRAFFIC_SCORE_TABLE) {
+    if (value >= min) return score;
+  }
+  return MIN_TRAFFIC_SCORE;
 }

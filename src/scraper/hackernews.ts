@@ -4,9 +4,9 @@
 import { cleanText } from '@/lib/normalize';
 import type { HackerNewsStory } from '@/lib/types';
 
+import { errMessage, fetchJson } from './http';
+
 const ENDPOINT = 'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=20';
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
-const FETCH_TIMEOUT_MS = 15_000;
 
 type RawHit = {
   objectID?: string;
@@ -24,21 +24,10 @@ type RawResponse = {
 
 export async function fetchHackerNewsTop(): Promise<HackerNewsStory[]> {
   try {
-    const res = await fetch(ENDPOINT, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) {
-      console.warn(`[scrape] hackernews HTTP ${res.status}`);
-      return [];
-    }
-    const data = (await res.json()) as RawResponse;
-    return (data.hits ?? [])
-      .map(toStory)
-      .filter((s): s is HackerNewsStory => s !== null);
+    const data = await fetchJson<RawResponse>(ENDPOINT);
+    return (data.hits ?? []).map(toStory).filter((s): s is HackerNewsStory => s !== null);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] hackernews failed: ${msg}`);
+    console.warn(`[scrape] hackernews failed: ${errMessage(err)}`);
     return [];
   }
 }

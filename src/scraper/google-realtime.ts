@@ -2,13 +2,13 @@
 // 현재 Google이 endpoint를 폐지(404) — graceful fail. 부활 대비 인프라 유지.
 // 카테고리는 우리 CategoryId(ADR-0008)로 매핑.
 
-import { cleanText } from '@/lib/normalize';
 import type { CategoryId } from '@/lib/categories';
+import { cleanText } from '@/lib/normalize';
 import type { TrendArticle, TrendStory } from '@/lib/types';
 
+import { errMessage, fetchText, HttpError } from './http';
+
 const BASE_URL = 'https://trends.google.com/trends/api/realtimetrends';
-const USER_AGENT = 'jdgrid-trends/0.1 (+https://trends.jdgrid.com)';
-const FETCH_TIMEOUT_MS = 15_000;
 const XSSI_PREFIX = ")]}',";
 
 /** Google cat 코드 → 우리 CategoryId 매핑. */
@@ -79,19 +79,10 @@ async function fetchCategory(
 ): Promise<TrendStory[]> {
   const url = `${BASE_URL}?hl=${hlParam}&tz=${tzParam}&cat=${code}&fi=0&fs=0&geo=${geoParam}&ri=300&rs=20&sort=0`;
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        Accept: 'application/json,text/plain,*/*',
-        'Accept-Language': geoLabel === 'KR' ? 'ko-KR,ko;q=0.9' : 'en-US,en;q=0.9',
-      },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    const text = await fetchText(url, {
+      accept: 'application/json,text/plain,*/*',
+      headers: { 'Accept-Language': geoLabel === 'KR' ? 'ko-KR,ko;q=0.9' : 'en-US,en;q=0.9' },
     });
-    if (!res.ok) {
-      // endpoint가 현재 404 — graceful fail.
-      return [];
-    }
-    const text = await res.text();
     const json = stripXssiPrefix(text);
     const parsed = JSON.parse(json) as RawResponse;
     const stories = parsed.storySummaries?.trendingStories ?? [];
@@ -101,8 +92,9 @@ async function fetchCategory(
       .map((s) => toStory(s, category, geoLabel))
       .filter((s): s is TrendStory => s.title !== '');
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] realtime ${geoLabel}/${code} failed: ${msg}`);
+    // endpoint가 현재 폐지(4xx/5xx) — HTTP 에러는 graceful fail (조용). 네트워크 에러만 로그.
+    if (err instanceof HttpError) return [];
+    console.warn(`[scrape] realtime ${geoLabel}/${code} failed: ${errMessage(err)}`);
     return [];
   }
 }

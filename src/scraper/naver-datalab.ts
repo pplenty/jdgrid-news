@@ -9,10 +9,10 @@ import type {
   NaverShoppingKeyword,
 } from '@/lib/types';
 
+import { errMessage, fetchJson } from './http';
 import { NAVER_CATEGORIES } from './naver-shopping-keywords';
 
 const BASE_URL = 'https://openapi.naver.com/v1/datalab/shopping';
-const FETCH_TIMEOUT_MS = 15_000;
 const HISTORY_DAYS = 14;
 const TOP_PER_CATEGORY = 6;
 const KEYWORD_CHUNK = 5;
@@ -34,7 +34,7 @@ async function naverFetch<T>(
   creds: Credentials,
 ): Promise<T | null> {
   try {
-    const res = await fetch(`${BASE_URL}${path}`, {
+    return await fetchJson<T>(`${BASE_URL}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,17 +42,9 @@ async function naverFetch<T>(
         'X-Naver-Client-Secret': creds.clientSecret,
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      console.warn(`[scrape] naver ${path} HTTP ${res.status} ${txt.slice(0, 120)}`);
-      return null;
-    }
-    return (await res.json()) as T;
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scrape] naver ${path} failed: ${msg}`);
+    console.warn(`[scrape] naver ${path} failed: ${errMessage(err)}`);
     return null;
   }
 }
