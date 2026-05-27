@@ -7,7 +7,10 @@ import { EN_STOPWORDS, KO_STOPWORDS } from '@/lib/stopwords';
 
 const KO_MIN_LEN = 2;
 const EN_MIN_LEN = 3;
-const PARTICLE_PROTECT_MARGIN = 2; // 토큰 길이 > particle.length + 2 일 때만 stripping
+// margin=2는 "후보는" 3글자가 1글자 particle '는' (length 1+2=3 → 3>3 false) 으로 strip 안 됐던
+// 보수적 룰. margin=1 로 완화 — 1글자 particle 은 2글자 이상 토큰에 적용, 2글자 particle 은
+// 3글자 이상 토큰에 적용. KO_MIN_LEN=2 가 잔여물(1글자) 보호.
+const PARTICLE_PROTECT_MARGIN = 1;
 
 export function stripKoreanParticles(word: string): string {
   for (const p of KO_PARTICLES) {
