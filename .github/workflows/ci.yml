@@ -1,0 +1,50 @@
+# 코드 품질 게이트 — typecheck + lint + 단위 테스트. ADR-0033/0034.
+# daily-scrape.yml(데이터 수집)과 별개. 매일 data/ 커밋에는 안 돌도록 paths-ignore.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    # 매일 cron이 push 하는 data/ 전용 커밋엔 코드 검사 불필요 — quota 절약.
+    paths-ignore:
+      - 'data/**'
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: typecheck · lint · test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
