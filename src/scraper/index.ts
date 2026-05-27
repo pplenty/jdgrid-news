@@ -234,6 +234,12 @@ async function main(): Promise<void> {
   const startedAt = Date.now();
   console.log(`[scrape] start — ${SOURCES.length} sources`);
 
+  // env 가시성: optional credential 존재 여부. 미설정은 graceful skip(빈 데이터) — 빈 source 진단용.
+  const envFlag = (k: string): string => (process.env[k]?.trim() ? 'set' : 'missing');
+  console.log(
+    `[scrape:env] NAVER_CLIENT_ID=${envFlag('NAVER_CLIENT_ID')} NAVER_CLIENT_SECRET=${envFlag('NAVER_CLIENT_SECRET')} YOUTUBE_API_KEY=${envFlag('YOUTUBE_API_KEY')}`,
+  );
+
   // 1. RSS 병렬 fetch
   const rssStart = Date.now();
   const fetched = await Promise.all(SOURCES.map(fetchSource));
@@ -364,6 +370,29 @@ async function main(): Promise<void> {
   const naverKeywordCount = Object.values(naverKeywords).reduce((n, arr) => n + arr.length, 0);
   console.log(
     `[scrape] done — ${snapshot.date}, ${deduped.length} articles, ${trendsCount} daily trends, ${storiesCount} stories (realtime ${realtimeKr.length + realtimeGlobal.length} / inferred ${inferredKr.length + inferredGlobal.length}), ${wikiCount} wiki entries, ${naverCategoryTrends.length} naver category trends + ${naverKeywordCount} naver keywords in ${ms}ms`,
+  );
+
+  // 신호 source별 건수 + 빈 source 경고 — 어떤 source가 비었는지 한눈에 (운영 가시성).
+  const signalCounts: Record<string, number> = {
+    rss: okCount,
+    google: googleKr.length + googleGlobal.length,
+    wiki: wikiCount,
+    'naver-cat': naverCategoryTrends.length,
+    'naver-kw': naverKeywordCount,
+    itunes: itunes.music.length + itunes.apps.length,
+    hackernews: hackernews.length,
+    youtube: youtube.length,
+    reddit: reddit.length,
+    realtime: realtimeKr.length + realtimeGlobal.length,
+  };
+  const emptySignals = Object.entries(signalCounts)
+    .filter(([, n]) => n === 0)
+    .map(([k]) => k);
+  const countsStr = Object.entries(signalCounts)
+    .map(([k, n]) => `${k}=${n}`)
+    .join(' ');
+  console.log(
+    `[scrape:summary] ${countsStr}${emptySignals.length ? ` | empty: ${emptySignals.join(',')}` : ''}`,
   );
 }
 
