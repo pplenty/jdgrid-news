@@ -70,13 +70,3 @@ export function normalizeIsoDate(input: string | undefined | null): string {
   if (Number.isNaN(d.getTime())) return new Date().toISOString();
   return d.toISOString();
 }
-
-/** Asia/Seoul 기준 YYYY-MM-DD. */
-export function formatDateKst(date: Date = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Seoul',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
-}

@@ -2,6 +2,7 @@
 // 인증: NAVER_CLIENT_ID / NAVER_CLIENT_SECRET (.env.local 또는 GitHub Secrets).
 // env 미설정 시 graceful skip — 빈 결과 반환, scraper가 snapshot.trends.naver 안 박음.
 
+import { kstDateString } from '@/lib/date';
 import type {
   HistoryPoint,
   NaverShoppingCategoryTrend,
@@ -25,15 +26,6 @@ function getCredentials(): Credentials | null {
   const clientSecret = process.env.NAVER_CLIENT_SECRET?.trim();
   if (!clientId || !clientSecret) return null;
   return { clientId, clientSecret };
-}
-
-function dateString(daysAgo: number): string {
-  const kst = new Date(Date.now() + 9 * 3_600_000);
-  kst.setUTCDate(kst.getUTCDate() - daysAgo);
-  const y = kst.getUTCFullYear();
-  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(kst.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 async function naverFetch<T>(
@@ -86,8 +78,8 @@ export async function fetchNaverCategoryTrends(): Promise<NaverShoppingCategoryT
   for (let i = 0; i < NAVER_CATEGORIES.length; i += CATEGORY_CHUNK) {
     const chunk = NAVER_CATEGORIES.slice(i, i + CATEGORY_CHUNK);
     const body = {
-      startDate: dateString(HISTORY_DAYS),
-      endDate: dateString(1),
+      startDate: kstDateString(HISTORY_DAYS),
+      endDate: kstDateString(1),
       timeUnit: 'date',
       category: chunk.map((c) => ({ name: c.alias, param: [c.code] })),
     };
@@ -129,8 +121,8 @@ export async function fetchNaverKeywordsByCategory(): Promise<Record<string, Nav
       for (let i = 0; i < cat.keywords.length; i += KEYWORD_CHUNK) {
         const chunk = cat.keywords.slice(i, i + KEYWORD_CHUNK);
         const body = {
-          startDate: dateString(HISTORY_DAYS),
-          endDate: dateString(1),
+          startDate: kstDateString(HISTORY_DAYS),
+          endDate: kstDateString(1),
           timeUnit: 'date',
           category: cat.code,
           keyword: chunk.map((k) => ({ name: k, param: [k] })),

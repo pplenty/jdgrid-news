@@ -18,7 +18,8 @@ import {
   CATEGORY_PRIORITY,
   type CategoryId,
 } from '@/lib/categories';
-import { cleanText, formatDateKst, idFromUrl, normalizeIsoDate } from '@/lib/normalize';
+import { formatDateKst } from '@/lib/date';
+import { cleanText, idFromUrl, normalizeIsoDate } from '@/lib/normalize';
 import type { Article, CategoryBucket, DailySnapshot, Trend, TrendStory } from '@/lib/types';
 
 import { trendsToInferredStories } from './auto-categorize';
