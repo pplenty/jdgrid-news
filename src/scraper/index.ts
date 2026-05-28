@@ -10,6 +10,7 @@ import './load-env';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
+import { Garu } from 'garu-ko';
 import Parser from 'rss-parser';
 
 import {
@@ -28,8 +29,9 @@ import { dedupeArticles } from './dedupe';
 import { fetchRealtimeStoriesByGeo } from './google-realtime';
 import { fetchGoogleTrends } from './google-trends';
 import { fetchHackerNewsTop } from './hackernews';
+import { errMessage } from './http';
 import { fetchItunesKorea } from './itunes';
-import { extractDerivedKeywords, matchArticles } from './keywords';
+import { extractDerivedKeywords, garuKoTokenizer, matchArticles } from './keywords';
 import { fetchNaverCategoryTrends, fetchNaverKeywordsByCategory } from './naver-datalab';
 import { fetchRedditTop } from './reddit';
 import { SOURCES, type Source } from './sources';
@@ -272,10 +274,21 @@ async function main(): Promise<void> {
   // 6. 자체 키워드 추출 + 빈도 (워드클라우드용 별도 보관)
   const koArticles = deduped.filter((a) => a.lang === 'ko');
   const enArticles = deduped.filter((a) => a.lang === 'en');
-  const derivedKr = extractDerivedKeywords(koArticles, TREND_TOP_N);
-  const derivedGlobal = extractDerivedKeywords(enArticles, TREND_TOP_N);
-  const cloudKo = extractDerivedKeywords(koArticles, 40);
+  // 한국어 키워드는 garu-ko 형태소 명사 추출(ADR-0035). load 실패 시 v0 tokenizer로 graceful fallback.
+  let koTokenizer: ((text: string) => string[]) | undefined;
+  try {
+    const garu = await Garu.load();
+    koTokenizer = garuKoTokenizer((t, o) => garu.nouns(t, o));
+    console.log('[scrape] garu-ko loaded — morphological ko keywords');
+  } catch (err) {
+    console.warn(`[scrape] garu-ko load failed — v0 tokenizer fallback: ${errMessage(err)}`);
+  }
+  // cloud(top 40)만 계산하고 derived(top 20)는 prefix slice — 같은 기사를 garu로 두 번
+  // 토큰화하던 중복 제거(형태소 분석이 토큰화 비용의 대부분).
+  const cloudKo = extractDerivedKeywords(koArticles, 40, koTokenizer);
   const cloudEn = extractDerivedKeywords(enArticles, 40);
+  const derivedKr = cloudKo.slice(0, TREND_TOP_N);
+  const derivedGlobal = cloudEn.slice(0, TREND_TOP_N);
 
   // 7. 외부 신호 병렬 fetch: Google Daily RSS, Google realtime API(현재 404),
   //    Wikipedia Pageviews 한·영 (ADR-0018), Naver DataLab 쇼핑 (ADR-0020, env 없으면 빈 결과).

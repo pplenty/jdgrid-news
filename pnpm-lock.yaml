@@ -14,6 +14,9 @@ importers:
       fast-xml-parser:
         specifier: ^5.8.0
         version: 5.8.0
+      garu-ko:
+        specifier: ^0.9.1
+        version: 0.9.1
       lucide-react:
         specifier: ^1.16.0
         version: 1.16.0(react@19.2.6)
@@ -1407,6 +1410,9 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  garu-ko@0.9.1:
+    resolution: {integrity: sha512-3Of0FJ/V9fyyZ9awjIUJWVoJeoQAw1Zw/3dQtCG1JFXrrllOZfKUrqtXm8OFJRBOEpnR965smi6h1bGmmU5S3w==}
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -3787,6 +3793,8 @@ snapshots:
       is-callable: 1.2.7
 
   functions-have-names@1.2.3: {}
+
+  garu-ko@0.9.1: {}
 
   generator-function@2.0.1: {}
 

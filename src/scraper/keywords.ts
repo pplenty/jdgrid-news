@@ -46,13 +46,33 @@ export function tokenize(text: string, lang: 'ko' | 'en'): string[] {
 
 export type DerivedKeyword = { keyword: string; count: number };
 
+/** garu 명사 추출 결과에 기존 ko 노이즈 필터(최소 길이·날짜 토큰·불용어) 적용. */
+function refineKoTokens(tokens: string[]): string[] {
+  return tokens.filter(
+    (w) => w.length >= KO_MIN_LEN && !KO_DATE_PATTERN.test(w) && !KO_STOPWORDS.has(w),
+  );
+}
+
+/**
+ * 형태소 분석기(garu-ko)의 nouns 를 ko 토크나이저로 래핑 — extractDerivedKeywords 의
+ * koTokenizer 인자로 주입(ADR-0035). includeSL: 외국어 명사(AI·IT 등)도 포함.
+ * 미주입 시 extractDerivedKeywords 는 v0 tokenize(조사 stripping)로 fallback.
+ */
+export function garuKoTokenizer(
+  nouns: (text: string, options?: { includeSL?: boolean }) => string[],
+): (text: string) => string[] {
+  return (text) => refineKoTokens(nouns(text, { includeSL: true }));
+}
+
 export function extractDerivedKeywords(
   articles: ReadonlyArray<{ title: string; summary: string; lang: 'ko' | 'en' }>,
   topN: number,
+  koTokenizer?: (text: string) => string[],
 ): DerivedKeyword[] {
   const counts = new Map<string, number>();
   for (const a of articles) {
-    const tokens = tokenize(`${a.title} ${a.summary}`, a.lang);
+    const text = `${a.title} ${a.summary}`;
+    const tokens = a.lang === 'ko' && koTokenizer ? koTokenizer(text) : tokenize(text, a.lang);
     for (const t of tokens) {
       counts.set(t, (counts.get(t) ?? 0) + 1);
     }

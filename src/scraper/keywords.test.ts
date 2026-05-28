@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractDerivedKeywords, matchArticles, stripKoreanParticles, tokenize } from './keywords';
+import {
+  extractDerivedKeywords,
+  garuKoTokenizer,
+  matchArticles,
+  stripKoreanParticles,
+  tokenize,
+} from './keywords';
 
 describe('stripKoreanParticles', () => {
   it('strips 1-char particles from 3+ char tokens', () => {
@@ -91,5 +97,24 @@ describe('matchArticles', () => {
       { title: 'AI', summary: '', url: 'https://a/1' },
     ];
     expect(matchArticles('ai', dup)).toEqual(['https://a/1']);
+  });
+});
+
+describe('garuKoTokenizer', () => {
+  it('applies ko refinement (min-len / date / stopword) to extractor output', () => {
+    // garu nouns 를 mock — wasm 없이 refine 로직만 검증.
+    const tok = garuKoTokenizer(() => ['삼성전자', '뉴스', '22일', 'AI', '그']);
+    // 뉴스=stopword, 22일=date 토큰, 그=1글자(<KO_MIN_LEN) 제거. 삼성전자·AI 유지.
+    expect(tok('무관한 입력')).toEqual(['삼성전자', 'AI']);
+  });
+
+  it('requests foreign tokens via includeSL so AI/IT survive', () => {
+    let received: { includeSL?: boolean } | undefined;
+    const tok = garuKoTokenizer((_text, opts) => {
+      received = opts;
+      return [];
+    });
+    tok('x');
+    expect(received).toEqual({ includeSL: true });
   });
 });
