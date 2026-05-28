@@ -430,4 +430,28 @@ export const EN_STOPWORDS = new Set<string>([
   'simple',
   'easy',
   'hard',
+  // 운영 발견 (2026-05-28): /trends story 제목에 오른 노이즈 — 매체명 + 저정보 일반어.
+  // (시사어 iran·war·trump·climate·talks 등은 보존)
+  'verge', // The Verge (매체명)
+  'npr', // NPR (매체명)
+  'world',
+  'government',
+  'country',
+  'story',
+  'global',
+  'media',
+  'breaking',
+  'axios', // 매체명
+  // 흔한 영어 기능어/잔재 (story 제목 부적합). 영어는 형태소 분석이 없어 완전 제거는
+  // 한계 — 명백한 것만. 근본 해결은 영어 형태소 도입(별도 작업).
+  'really',
+  'other',
+  'because',
+  'right',
+  'things',
+  'own',
+  'need',
+  'talk',
+  'show',
+  'don',
 ]);
