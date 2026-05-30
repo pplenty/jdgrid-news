@@ -239,6 +239,7 @@
 - [ADR-0033 — scraper HTTP 계층 공통화 + retry/backoff (fetch 유틸·config·KST 통일)](./adr/0033-scraper-http-layer-retry.md)
 - [ADR-0034 — 단위 테스트 도입 (Vitest, 33 tests)](./adr/0034-unit-testing-vitest.md)
 - [ADR-0035 — keyword extraction v1 형태소 명사 추출 (garu-ko WASM, ADR-0014 발전)](./adr/0035-keyword-extraction-v1-morphological.md)
+- [ADR-0036 — keyword extraction v1 영어 형태소 (compromise, ADR-0035 보완)](./adr/0036-keyword-extraction-v1-english-morphological.md)
 
 ---
 
