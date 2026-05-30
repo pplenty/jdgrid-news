@@ -46,6 +46,8 @@ export function tokenize(text: string, lang: 'ko' | 'en'): string[] {
 
 export type DerivedKeyword = { keyword: string; count: number };
 
+export type Tokenizer = (text: string) => string[];
+
 /** garu 명사 추출 결과에 기존 ko 노이즈 필터(최소 길이·날짜 토큰·불용어) 적용. */
 function refineKoTokens(tokens: string[]): string[] {
   return tokens.filter(
@@ -53,26 +55,59 @@ function refineKoTokens(tokens: string[]): string[] {
   );
 }
 
+/** compromise 명사 토큰에 기존 en 필터(최소 길이·영문자 패턴·불용어) 적용. */
+function refineEnTokens(tokens: string[]): string[] {
+  return tokens.filter(
+    (w) => w.length >= EN_MIN_LEN && /^[a-z][a-z0-9]*$/.test(w) && !EN_STOPWORDS.has(w),
+  );
+}
+
 /**
  * 형태소 분석기(garu-ko)의 nouns 를 ko 토크나이저로 래핑 — extractDerivedKeywords 의
- * koTokenizer 인자로 주입(ADR-0035). includeSL: 외국어 명사(AI·IT 등)도 포함.
- * 미주입 시 extractDerivedKeywords 는 v0 tokenize(조사 stripping)로 fallback.
+ * tokenizers.ko 인자로 주입(ADR-0035). includeSL: 외국어 명사(AI·IT 등)도 포함.
+ * 미주입 시 v0 tokenize(조사 stripping) 로 fallback.
  */
 export function garuKoTokenizer(
   nouns: (text: string, options?: { includeSL?: boolean }) => string[],
-): (text: string) => string[] {
+): Tokenizer {
   return (text) => refineKoTokens(nouns(text, { includeSL: true }));
+}
+
+/**
+ * compromise 의 #Noun 태그 토큰을 en 토크나이저로 래핑 — tokenizers.en 인자로 주입(ADR-0036).
+ * `.nouns().out('array')` 는 명사구를 묶어 반환(빈도 매칭 부적합)하므로
+ * `.terms().json()` 에서 #Noun 태그된 개별 단어만 추출. 미주입 시 v0 fallback.
+ */
+export function compromiseEnTokenizer(
+  nlpFn: (text: string) => { terms(): { json(): unknown[] } },
+): Tokenizer {
+  return (text) => {
+    const terms = nlpFn(text).terms().json() as Array<{
+      text?: string;
+      terms?: Array<{ text: string; tags?: string[] }>;
+      tags?: string[];
+    }>;
+    const out: string[] = [];
+    for (const t of terms) {
+      const list = t.terms ?? [{ text: t.text ?? '', tags: t.tags }];
+      for (const w of list) {
+        if (w.tags?.includes('Noun')) out.push(w.text.toLowerCase());
+      }
+    }
+    return refineEnTokens(out);
+  };
 }
 
 export function extractDerivedKeywords(
   articles: ReadonlyArray<{ title: string; summary: string; lang: 'ko' | 'en' }>,
   topN: number,
-  koTokenizer?: (text: string) => string[],
+  tokenizers?: { ko?: Tokenizer; en?: Tokenizer },
 ): DerivedKeyword[] {
   const counts = new Map<string, number>();
   for (const a of articles) {
     const text = `${a.title} ${a.summary}`;
-    const tokens = a.lang === 'ko' && koTokenizer ? koTokenizer(text) : tokenize(text, a.lang);
+    const tk = tokenizers?.[a.lang];
+    const tokens = tk ? tk(text) : tokenize(text, a.lang);
     for (const t of tokens) {
       counts.set(t, (counts.get(t) ?? 0) + 1);
     }

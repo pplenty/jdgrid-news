@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  compromiseEnTokenizer,
   extractDerivedKeywords,
   garuKoTokenizer,
   matchArticles,
@@ -97,6 +98,43 @@ describe('matchArticles', () => {
       { title: 'AI', summary: '', url: 'https://a/1' },
     ];
     expect(matchArticles('ai', dup)).toEqual(['https://a/1']);
+  });
+});
+
+describe('compromiseEnTokenizer', () => {
+  it('extracts #Noun-tagged single tokens (not noun phrases) and applies en refinement', () => {
+    // compromise mock — 대문자 시작 단어를 Noun 으로 가정해 .terms().json() 구조를 흉내.
+    const mockNlp = (text: string) => ({
+      terms: () => ({
+        json: () =>
+          text.split(/\s+/).map((w) => ({
+            text: w,
+            tags: /^[A-Z][a-z]+$/.test(w) ? ['Noun'] : [],
+          })),
+      }),
+    });
+    const tok = compromiseEnTokenizer(mockNlp);
+    // Iran/World 가 Noun 태그됨. breaking/the 는 mock 룰상 비태그(소문자) → 자동 제외.
+    // refine 후: World = EN_STOPWORDS → 제외. iran 만 남음.
+    expect(tok('Iran World breaking the')).toEqual(['iran']);
+  });
+
+  it('handles nested terms[] structure (sentence-level wrapper)', () => {
+    const mockNlp = (text: string) => ({
+      terms: () => ({
+        json: () => [
+          {
+            text,
+            terms: text.split(/\s+/).map((w) => ({
+              text: w,
+              tags: /^[A-Z]/.test(w) ? ['Noun'] : [],
+            })),
+          },
+        ],
+      }),
+    });
+    const tok = compromiseEnTokenizer(mockNlp);
+    expect(tok('Trump signed')).toEqual(['trump']);
   });
 });
 
