@@ -164,19 +164,38 @@ export const KO_STOPWORDS = new Set<string>([
   '없이',
   '앞두고',
   '만에',
-  '이라고',  // particle '이라고' (3글자) — KO_MIN_LEN=2 라 자체 토큰일 때 통과
+  '이라고', // particle '이라고' (3글자) — KO_MIN_LEN=2 라 자체 토큰일 때 통과
   '라고',
-  '에서',    // particle 같이, 2글자 자체 토큰일 때
+  '에서', // particle 같이, 2글자 자체 토큰일 때
   '으로',
-  '것으',    // "것으로" → particle '로' strip → "것으" 잔재
+  '것으', // "것으로" → particle '로' strip → "것으" 잔재
   // 운영 발견 (2026-05-28): garu 형태소(ADR-0035) 적용 후 top에 잔존한 메타명사.
   // 시사성 있는 명사(조사·시장·사전·회의 등)는 의도적으로 보존.
-  '사진',    // 캡션/출처 메타 ("사진=연합뉴스")
-  '현지',    // "현지시간/현지언론" 메타
-  '시간',    // 저정보 ("X시간 전")
-  '현장',    // "사고 현장/현장 취재" 메타성
-  '진행',    // "X 진행" 동작성 명사
-  '서소문',  // 중앙일보 사옥 지명 — 기사 출처 fragment
+  '사진', // 캡션/출처 메타 ("사진=연합뉴스")
+  '현지', // "현지시간/현지언론" 메타
+  '시간', // 저정보 ("X시간 전")
+  '현장', // "사고 현장/현장 취재" 메타성
+  '진행', // "X 진행" 동작성 명사
+  '서소문', // 중앙일보 사옥 지명 — 기사 출처 fragment
+  // 운영 발견 (2026-06-01): 7일 누적 빈도 분석(449 ko articles)에서 top 60 에 잔존한 일반/메타 명사.
+  // 시사어(미국·한국·월드컵·이란·대통령·선거·투표·손흥민·삼성전자·노조·혐의 등)는 보존.
+  // 복합명사 split fragment(프로·운행·구간·고가)는 stopword 대신 복합명사 병합(ADR-0035 후속)으로
+  // 처리 예정 — 여기선 토픽성 없는 명백한 일반명사만 추가.
+  'txt', // RSS/요약 아티팩트 (40회) — 의미 없는 fragment
+  '지역',
+  '남성',
+  '여성',
+  '자신',
+  '상대',
+  '이상', // "X 이상" 수량 표현 잔재
+  '결과',
+  '문제',
+  '기반',
+  '최고',
+  '최대',
+  '목표',
+  '공개', // "X 공개" 동작성 명사 (발표 류)
+  '공동',
 ]);
 
 export const EN_STOPWORDS = new Set<string>([
@@ -454,4 +473,35 @@ export const EN_STOPWORDS = new Set<string>([
   'talk',
   'show',
   'don',
+  // 운영 발견 (2026-06-01): 7일 누적 빈도 분석(231 en articles)에서 top 60 에 잔존한 일반/스펙 명사.
+  // compromise #Noun 이 명사로 잡지만 뉴스 트렌드로선 저정보. 브랜드명(google·apple·spacex·gemini·
+  // sonos·alexa·walmart·ferrari)과 시사어(iran·trump·cancer 등)는 보존. 다수가 가젯 리뷰 RSS
+  // (The Verge buyers' guide) 유래 — source 품질은 별도 이슈(세션 로그 후속 참조).
+  'home',
+  'company',
+  'price',
+  'prices',
+  'products',
+  'life',
+  'quality',
+  'design',
+  'users',
+  'devices',
+  'technology',
+  'information',
+  'hours',
+  'site',
+  'control',
+  'test',
+  'something',
+  'part',
+  'top',
+  'moon',
+  'pro',
+  'plus',
+  'gen',
+  'inch',
+  'usb',
+  'web',
+  'video',
 ]);
