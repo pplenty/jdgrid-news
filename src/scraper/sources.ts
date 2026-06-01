@@ -19,6 +19,11 @@ export type Source = {
   lang: 'ko' | 'en';
   /** 가중치 v1은 모두 1.0 (균등). 운영 튜닝 영역. */
   weight: number;
+  /**
+   * 커머스/딜/가이드 글을 수집 단계에서 제거할지 (ADR-0038). 가젯 딜 RSS 를 섞어 보내는
+   * 매체(The Verge)에만 켠다. RSS category 또는 고정밀 딜 제목 패턴으로 판별 (source-filter.ts).
+   */
+  dropCommerce?: boolean;
 };
 
 export const SOURCES: readonly Source[] = [
@@ -130,7 +135,8 @@ export const SOURCES: readonly Source[] = [
     weight: 1,
   },
 
-  // The Verge — tech.
+  // The Verge — tech. 가젯 딜·바이어스가이드를 일반 RSS 에 섞어 보냄(EN 26%, 그중 35% 딜/가이드)
+  // → dropCommerce 로 커머스 글 인입 차단 (ADR-0038). 정상 테크뉴스·리뷰는 유지.
   {
     id: 'verge-tech',
     name: 'The Verge',
@@ -139,6 +145,7 @@ export const SOURCES: readonly Source[] = [
     category: 'tech',
     lang: 'en',
     weight: 1,
+    dropCommerce: true,
   },
 
   // ─── 국내 (한국어, 6개 매체) ───────────────────────────────────────────

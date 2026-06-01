@@ -41,6 +41,7 @@ import {
 } from './keywords';
 import { fetchNaverCategoryTrends, fetchNaverKeywordsByCategory } from './naver-datalab';
 import { fetchRedditTop } from './reddit';
+import { isCommercePost } from './source-filter';
 import { SOURCES, type Source } from './sources';
 import { fetchWikipediaTop } from './wikipedia';
 import { fetchYouTubeKorea } from './youtube';
@@ -68,6 +69,8 @@ const parser: Parser<unknown, ItemExtras> = new Parser({
       ['media:thumbnail', 'mediaThumbnail', { keepArray: false }],
       ['media:content', 'mediaContent', { keepArray: false }],
       ['content:encoded', 'content:encoded'],
+      // Atom <category term="…"> 캡처 — dropCommerce 필터용 (ADR-0038). 기본 파서는 미수집.
+      ['category', 'categories', { keepArray: true }],
     ],
   },
 });
@@ -257,11 +260,26 @@ async function main(): Promise<void> {
     `[scrape:rss] ${Date.now() - rssStart}ms — ${items.length} items from ${okCount}/${SOURCES.length} sources`,
   );
 
-  // 2. 정규화
+  // 2. 정규화 (+ ADR-0038: dropCommerce 매체의 커머스/딜/가이드 글 인입 차단)
   const articles: Article[] = [];
+  let droppedCommerce = 0;
   for (const raw of items) {
+    if (
+      raw.source.dropCommerce &&
+      isCommercePost({
+        title: raw.item.title,
+        summary: raw.item.contentSnippet ?? raw.item.summary,
+        categories: raw.item.categories,
+      })
+    ) {
+      droppedCommerce++;
+      continue;
+    }
     const a = toArticle(raw);
     if (a) articles.push(a);
+  }
+  if (droppedCommerce > 0) {
+    console.log(`[scrape] dropped ${droppedCommerce} commerce/deals items (ADR-0038)`);
   }
 
   // 3. dedupe
