@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     type: 'website',
   },
+  // 네이버 서치어드바이저 사이트 소유확인. <meta name="naver-site-verification" …> 렌더.
+  verification: {
+    other: {
+      'naver-site-verification': '676cdee75060a19cff222b057697f849ec0f2425',
+    },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
