@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start",
     "scrape": "tsx src/scraper/index.ts",
+    "audit:keywords": "tsx scripts/audit-keywords.ts",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
