@@ -35,7 +35,7 @@ import { fetchItunesKorea } from './itunes';
 import {
   compromiseEnTokenizer,
   extractDerivedKeywords,
-  garuKoTokenizer,
+  garuCompoundKoTokenizer,
   matchArticles,
   type Tokenizer,
 } from './keywords';
@@ -121,8 +121,7 @@ function toArticle(raw: FetchedItem): Article | null {
   if (!title) return null;
 
   // ADR-0007: summary는 RSS description 그대로. cleanText는 HTML/엔티티/공백 정규화만.
-  const rawSummary =
-    raw.item.contentSnippet ?? raw.item.summary ?? raw.item.content ?? '';
+  const rawSummary = raw.item.contentSnippet ?? raw.item.summary ?? raw.item.content ?? '';
   const summary = cleanText(rawSummary);
 
   return {
@@ -285,8 +284,11 @@ async function main(): Promise<void> {
   let koTokenizer: Tokenizer | undefined;
   try {
     const garu = await Garu.load();
-    koTokenizer = garuKoTokenizer((t, o) => garu.nouns(t, o));
-    console.log('[scrape] garu-ko loaded — morphological ko keywords');
+    koTokenizer = garuCompoundKoTokenizer((t) => {
+      const r = garu.analyze(t);
+      return Array.isArray(r) ? (r[0] ?? { tokens: [] }) : r;
+    });
+    console.log('[scrape] garu-ko loaded — morphological ko keywords (compound merge)');
   } catch (err) {
     console.warn(`[scrape] garu-ko load failed — v0 tokenizer fallback: ${errMessage(err)}`);
   }

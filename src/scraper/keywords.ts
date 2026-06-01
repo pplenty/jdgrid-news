@@ -62,15 +62,41 @@ function refineEnTokens(tokens: string[]): string[] {
   );
 }
 
+/** garu analyze() 형태소 토큰: surface(text) + 품사(pos) + source 문자 오프셋(start,end). */
+export type GaruToken = { text: string; pos: string; start: number; end: number };
+
+/** 복합명사 병합 대상 품사 — NNG 일반명사·NNP 고유명사·SL 외국어(AI·IT). nouns()+includeSL 와 동일 집합. */
+const KO_NOUN_POS = new Set(['NNG', 'NNP', 'SL']);
+
 /**
- * 형태소 분석기(garu-ko)의 nouns 를 ko 토크나이저로 래핑 — extractDerivedKeywords 의
- * tokenizers.ko 인자로 주입(ADR-0035). includeSL: 외국어 명사(AI·IT 등)도 포함.
- * 미주입 시 v0 tokenize(조사 stripping) 로 fallback.
+ * 형태소 분석기(garu-ko)의 analyze() 를 복합명사 병합 ko 토크나이저로 래핑 (ADR-0037).
+ * garu 는 복합명사를 sub-명사로 분리하지만(프로야구→프로+야구) 분리된 형태소가 같은
+ * source span(start,end)을 공유한다 → 같은 span 의 명사 형태소를 surface 순서로 이어붙여
+ * 복합명사를 복원. 조사·어미·접사는 명사 POS 가 아니므로 자연 제외(삼성전자가→삼성전자,
+ * 발표했다→발표). span 이 다르면(별도 어절) 병합 안 함. 미주입 시 v0 tokenize 로 fallback.
+ * ADR-0035 의 nouns() 분리 방식을 발전 — 빈도 분산(프로+야구) 해소.
  */
-export function garuKoTokenizer(
-  nouns: (text: string, options?: { includeSL?: boolean }) => string[],
+export function garuCompoundKoTokenizer(
+  analyze: (text: string) => { tokens: GaruToken[] },
 ): Tokenizer {
-  return (text) => refineKoTokens(nouns(text, { includeSL: true }));
+  return (text) => {
+    const tokens = analyze(text).tokens ?? [];
+    const merged: string[] = [];
+    let i = 0;
+    while (i < tokens.length) {
+      const { start, end } = tokens[i];
+      let j = i;
+      let buf = '';
+      // 같은 source span 을 공유하는 형태소 묶음 = 한 어절. 그 중 명사 POS 만 이어붙임.
+      while (j < tokens.length && tokens[j].start === start && tokens[j].end === end) {
+        if (KO_NOUN_POS.has(tokens[j].pos)) buf += tokens[j].text;
+        j++;
+      }
+      if (buf) merged.push(buf);
+      i = j;
+    }
+    return refineKoTokens(merged);
+  };
 }
 
 /**

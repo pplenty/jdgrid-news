@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   compromiseEnTokenizer,
   extractDerivedKeywords,
-  garuKoTokenizer,
+  garuCompoundKoTokenizer,
   matchArticles,
   stripKoreanParticles,
   tokenize,
@@ -138,21 +138,59 @@ describe('compromiseEnTokenizer', () => {
   });
 });
 
-describe('garuKoTokenizer', () => {
-  it('applies ko refinement (min-len / date / stopword) to extractor output', () => {
-    // garu nouns 를 mock — wasm 없이 refine 로직만 검증.
-    const tok = garuKoTokenizer(() => ['삼성전자', '뉴스', '22일', 'AI', '그']);
-    // 뉴스=stopword, 22일=date 토큰, 그=1글자(<KO_MIN_LEN) 제거. 삼성전자·AI 유지.
-    expect(tok('무관한 입력')).toEqual(['삼성전자', 'AI']);
+describe('garuCompoundKoTokenizer', () => {
+  it('merges same-span noun morphemes into compounds, drops non-noun spans', () => {
+    // garu analyze 를 mock — wasm 없이 병합 로직 검증. 같은 (start,end) = 한 어절.
+    const tok = garuCompoundKoTokenizer(() => ({
+      tokens: [
+        { text: '프로', pos: 'NNG', start: 0, end: 4 },
+        { text: '야구', pos: 'NNG', start: 0, end: 4 },
+        { text: '개막전', pos: 'NNG', start: 5, end: 8 },
+        { text: '열리', pos: 'VV', start: 9, end: 11 },
+        { text: '어', pos: 'EF', start: 9, end: 11 },
+      ],
+    }));
+    // 프로+야구 → 프로야구(같은 span). 개막전 단독. 열려(동사 span, 명사 0) 제외.
+    expect(tok('프로야구 개막전 열려')).toEqual(['프로야구', '개막전']);
   });
 
-  it('requests foreign tokens via includeSL so AI/IT survive', () => {
-    let received: { includeSL?: boolean } | undefined;
-    const tok = garuKoTokenizer((_text, opts) => {
-      received = opts;
-      return [];
-    });
-    tok('x');
-    expect(received).toEqual({ includeSL: true });
+  it('drops particles/endings (non-noun POS) and includes foreign SL in merge', () => {
+    const tok = garuCompoundKoTokenizer(() => ({
+      tokens: [
+        { text: '삼성전자', pos: 'NNP', start: 0, end: 5 },
+        { text: '가', pos: 'JKS', start: 0, end: 5 },
+        { text: 'AI', pos: 'SL', start: 6, end: 10 },
+        { text: '반도체', pos: 'NNG', start: 6, end: 10 },
+        { text: '수출', pos: 'NNG', start: 11, end: 15 },
+        { text: '하', pos: 'XSV', start: 11, end: 15 },
+        { text: '었', pos: 'EP', start: 11, end: 15 },
+        { text: '다', pos: 'EF', start: 11, end: 15 },
+      ],
+    }));
+    // 삼성전자가→삼성전자(조사 제외), AI+반도체→AI반도체, 수출했다→수출.
+    expect(tok('삼성전자가 AI반도체 수출했다')).toEqual(['삼성전자', 'AI반도체', '수출']);
+  });
+
+  it('does not merge nouns from different source spans (separate eojeols)', () => {
+    const tok = garuCompoundKoTokenizer(() => ({
+      tokens: [
+        { text: '대통령', pos: 'NNG', start: 0, end: 3 },
+        { text: '후보', pos: 'NNG', start: 4, end: 6 },
+      ],
+    }));
+    expect(tok('대통령 후보')).toEqual(['대통령', '후보']);
+  });
+
+  it('applies ko refinement (stopword/min-len/date) to merged output', () => {
+    const tok = garuCompoundKoTokenizer(() => ({
+      tokens: [
+        { text: '뉴스', pos: 'NNG', start: 0, end: 2 }, // stopword
+        { text: '5', pos: 'SN', start: 3, end: 5 }, // 숫자(비명사 POS)
+        { text: '월', pos: 'NNB', start: 3, end: 5 }, // 의존명사(비-NOUN POS) → "5월" 미생성
+        { text: '삼성', pos: 'NNP', start: 6, end: 8 },
+      ],
+    }));
+    // 뉴스=stopword 제거, 5월 span 은 NNG/NNP/SL 없음 → 제외, 삼성만.
+    expect(tok('뉴스 5월 삼성')).toEqual(['삼성']);
   });
 });
