@@ -112,6 +112,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/privacy/" className="hover:text-fg">
+                개인정보처리방침
+              </Link>
+            </li>
+            <li>
               <Link href="/headlines/" className="hover:text-fg">
                 Headlines
               </Link>

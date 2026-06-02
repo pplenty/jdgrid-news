@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = snapshot.date;
 
   const staticPages: MetadataRoute.Sitemap = (
-    ['/', '/about/', '/headlines/', '/trends/', '/analytics/'] as const
+    ['/', '/about/', '/privacy/', '/headlines/', '/trends/', '/analytics/'] as const
   ).map((p) => ({
     url: `${BASE}${p}`,
     lastModified,
