@@ -2,9 +2,11 @@
 // 트렌드 전용: TrendingHero + Wikipedia + Naver + (추후 iTunes Korea).
 // 헤드라인은 /headlines로 분리.
 
+import { buildBriefing } from '@/lib/briefing';
 import { loadLatest, loadPrevious } from '@/lib/data';
 import { computeMovers } from '@/lib/movers';
 
+import { DailyBriefing } from './_components/DailyBriefing';
 import { HackerNewsSection } from './_components/HackerNewsSection';
 import { ItunesSection } from './_components/ItunesSection';
 import { MoversSection } from './_components/MoversSection';
@@ -31,8 +33,12 @@ export default function HomePage() {
     ? computeMovers(snapshot.trends.global, yesterday.trends.global)
     : [];
 
+  const briefing = buildBriefing(snapshot, yesterday);
+
   return (
     <>
+      <DailyBriefing briefing={briefing} />
+
       <TrendingHero
         kr={snapshot.trends.kr}
         global={snapshot.trends.global}
