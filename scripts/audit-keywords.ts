@@ -4,6 +4,8 @@
 //     드롭 수 = scraper 의 `[scrape] dropped N`. KEEP 중 느슨한 딜 신호 매칭 = false-negative 후보(육안).
 // (2) 소프트 잔재 추세: 저장 data/*.json 의 derived 클라우드로 watch-list 단어 일자별 추세(지속성).
 //     + 최신 클라우드 top 출력으로 신규 노이즈 육안 점검.
+// (3) 커머스 추세: 저장 data/*.json 에서 dropCommerce 매체 기사 중 커머스 패턴 매칭을 일자별로.
+//     필터 적용일 이후 0 수렴 = production recall 확인 (라이브 1회 스냅샷보다 신뢰성↑).
 //
 // 실행: pnpm audit:keywords [days]   (기본 7일)
 // 네트워크: dropCommerce 매체 피드만 fetch (recall 점검용). 데이터·git 미변경.
@@ -32,9 +34,17 @@ const COMMERCE_CATS = new Set([
   'shopping',
 ]);
 
-/** 느슨한 딜 신호 — KEEP 글 중 매칭 시 false-negative 후보로 *육안 점검* (자동 드롭 아님). review·vs 제외. */
+/**
+ * 느슨한 커머스 탐지기 — production 필터(isCommercePost)보다 *넓게* 잡는다(recall 측정용).
+ * 섹션 (1) KEEP 글 false-negative 후보 + (3) 저장 데이터 커머스 추세 공용. review·vs 제외.
+ */
+// 맨 `$\d`(예: "$4 billion contract")·bundle·cheap 은 뉴스 오탐 유발 → 제외. 가격 딜은 "under $N"·
+// "$N right now/or less/off" 형태만. 정밀도 우선 — 매칭이 실제 커머스 누락 신호가 되도록.
 const LOOSE_DEAL =
-  /\bdeals?\b|\bsale\b|\bdiscount|\bcoupon|\bunder \$|\$\d|\bcheap\b|\bpreorder\b|\bgift\b|%\s?off|\bbundle\b/i;
+  /\bdeals?\b|\bon sale\b|\bsale\b|\bdiscount|\bcoupon\b|%\s?off|\bhalf off\b|\bgift guide\b|\bbuying guide\b|\bgiveaway\b|free tech|\bprime day\b|\bblack friday\b|\bcyber monday\b|\bpreorder\b|\bunder \$\d|\$\d[\d,.]*\s+(?:right now|or less|off)\b/i;
+
+/** dropCommerce(ADR-0038) 적용 시작일 — 저장 데이터 전/후 표시 기준. */
+const COMMERCE_FILTER_SINCE = '2026-06-02';
 
 async function auditRecall(): Promise<void> {
   console.log('========== (1) 커머스 필터 recall (dropCommerce 매체 라이브) ==========');
@@ -138,9 +148,56 @@ function auditResidual(): void {
   console.log('\n  (지속성 판정은 같은 파이프라인 누적일 기준이 정확 — 토크나이저/불용어 변경 직후엔 추세 약함)');
 }
 
+function auditStoredCommerceTrend(): void {
+  console.log(`\n\n========== (3) 저장 데이터 커머스 추세 (dropCommerce 매체, 필터 효과) ==========`);
+  const targets = SOURCES.filter((s) => s.dropCommerce);
+  if (targets.length === 0) {
+    console.log('  dropCommerce 매체 없음 — skip');
+    return;
+  }
+  const DATA = resolve(process.cwd(), 'data');
+  const files = readdirSync(DATA)
+    .filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f))
+    .sort()
+    .slice(-DAYS);
+  if (files.length === 0) {
+    console.log('  data/*.json 없음 — skip');
+    return;
+  }
+
+  for (const src of targets) {
+    console.log(`\n  [${src.name}] 일자        | 기사 | 커머스 | 샘플`);
+    for (const f of files) {
+      const snap = JSON.parse(readFileSync(resolve(DATA, f), 'utf8'));
+      const seen = new Set<string>();
+      const arts: string[] = [];
+      for (const c of snap.categories ?? []) {
+        if (c.id === 'top') continue;
+        for (const a of c.items) {
+          if (a.source?.name === src.name && !seen.has(a.id)) {
+            seen.add(a.id);
+            arts.push(`${a.title ?? ''} ${a.summary ?? ''}`);
+          }
+        }
+      }
+      const deals = arts.filter((t) => LOOSE_DEAL.test(t));
+      const date = f.replace('.json', '');
+      const mark = date >= COMMERCE_FILTER_SINCE ? '✓필터' : ' 전 ';
+      const sample = (deals[0] ?? '').trim().slice(0, 48);
+      console.log(
+        `   ${date} [${mark}] | ${String(arts.length).padStart(3)}  | ${String(deals.length).padStart(4)}   | ${sample}`,
+      );
+    }
+  }
+  console.log(
+    `\n  (커머스 = 느슨한 탐지기. 필터 적용일(${COMMERCE_FILTER_SINCE}~) 이후 0 수렴이면 production recall 양호)`,
+  );
+}
+
 async function main(): Promise<void> {
   await auditRecall();
   auditResidual();
+  auditStoredCommerceTrend();
 }
 
 main()
