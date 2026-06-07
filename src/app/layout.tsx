@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 
 import { loadLatest, toSidebarData } from '@/lib/data';
+import { siteGraph } from '@/lib/jsonld';
 
 import { ClientShell } from './_components/ClientShell';
+import { JsonLd } from './_components/JsonLd';
 import { Footer } from './_components/Footer';
 import { ThemeProvider, THEME_INIT_SCRIPT } from './_components/ThemeProvider';
 import './globals.css';
@@ -43,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href={PRETENDARD_CSS} />
         {/* eslint-disable-next-line react/no-danger */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <JsonLd data={siteGraph()} />
       </head>
       <body className="font-sans">
         <ThemeProvider>

@@ -4,6 +4,7 @@ import { BookOpen, ExternalLink, Globe2, Hash, Newspaper, TrendingUp } from 'luc
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
 import { EmptyState } from '@/app/_components/EmptyState';
+import { JsonLd } from '@/app/_components/JsonLd';
 import { Sparkline } from '@/app/_components/Sparkline';
 import {
   findArticlesByKeyword,
@@ -12,6 +13,7 @@ import {
   groupArticlesBySource,
   loadLatest,
 } from '@/lib/data';
+import { breadcrumb, keywordUrl, SITE_BASE } from '@/lib/jsonld';
 import type { GoogleNewsItem, WikiTrend } from '@/lib/types';
 
 export function generateStaticParams() {
@@ -47,6 +49,12 @@ export default async function KeywordPage({
 
   return (
     <div className="px-4 py-8 lg:px-8">
+      <JsonLd
+        data={breadcrumb([
+          { name: '홈', url: `${SITE_BASE}/` },
+          { name: keyword, url: keywordUrl(keyword) },
+        ])}
+      />
       <header className="mb-6 border-b border-border-subtle pb-4">
         <div className="flex items-baseline gap-2">
           <Hash size={20} className="text-fg-subtle" />

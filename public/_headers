@@ -1,0 +1,6 @@
+# Cloudflare 정적 자산 응답 헤더 (ADR-0040).
+# Next metadata 의 OG 이미지 라우트는 확장자 없는 파일(out/opengraph-image)로 생성돼
+# content-type 자동추론이 안 됨 → 명시. (Workers Assets 가 _headers 지원)
+/opengraph-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400
