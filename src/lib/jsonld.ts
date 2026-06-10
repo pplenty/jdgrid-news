@@ -23,6 +23,16 @@ export function siteGraph() {
         description: '국내·해외 검색·뉴스·지식·쇼핑·문화 트렌드를 한 페이지에서.',
         inLanguage: 'ko-KR',
         publisher: { '@id': `${SITE_BASE}/#organization` },
+        // ADR-0042: 사이트 내 검색(/search) 도입 → ADR-0040 에서 보류했던 SearchAction 활성화.
+        // sitelinks 검색창 후보. trailingSlash 정합으로 /search/?q= 사용.
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${SITE_BASE}/search/?q={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
       },
     ],
   };

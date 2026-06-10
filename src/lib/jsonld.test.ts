@@ -10,6 +10,21 @@ describe('siteGraph', () => {
     expect((site.publisher as { '@id': string })['@id']).toBe(org['@id']);
     expect(site['@context']).toBeUndefined(); // @context는 graph 루트에만
   });
+
+  it('exposes a SearchAction targeting /search (ADR-0042)', () => {
+    const g = siteGraph() as { '@graph': Array<Record<string, unknown>> };
+    const site = g['@graph'].find((n) => n['@type'] === 'WebSite')!;
+    const action = site.potentialAction as {
+      '@type': string;
+      target: { urlTemplate: string };
+      'query-input': string;
+    };
+    expect(action['@type']).toBe('SearchAction');
+    expect(action.target.urlTemplate).toBe(
+      'https://trends.jdgrid.com/search/?q={search_term_string}',
+    );
+    expect(action['query-input']).toBe('required name=search_term_string');
+  });
 });
 
 describe('itemList', () => {

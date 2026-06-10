@@ -3,11 +3,12 @@
 // 미니멀 헤더 (ADR-0009): 로고 + 우상단 액션 (날짜·테마 토글). 모바일 ☰ 버튼.
 
 import Link from 'next/link';
-import { Menu, Monitor, Moon, PanelLeft, Sun } from 'lucide-react';
+import { Menu, Monitor, Moon, PanelLeft, Search, Sun } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { formatDateLabel } from '@/lib/utils';
 
+import { SearchBox } from './SearchBox';
 import { useTheme, type Theme } from './ThemeProvider';
 
 type Props = {
@@ -19,8 +20,8 @@ type Props = {
 
 export function Header({ date, sidebarCollapsed, onOpenDrawer, onToggleSidebar }: Props) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-bg/85 px-4 backdrop-blur lg:px-8">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-bg/85 px-4 backdrop-blur lg:px-8">
+      <div className="flex shrink-0 items-center gap-3">
         <button
           type="button"
           aria-label="open menu"
@@ -42,8 +43,19 @@ export function Header({ date, sidebarCollapsed, onOpenDrawer, onToggleSidebar }
         </Link>
       </div>
 
-      <div className="flex items-center gap-3 text-sm text-fg-muted">
-        <span className="hidden sm:inline tabular-nums">{formatDateLabel(date)}</span>
+      <div className="flex flex-1 justify-center">
+        <SearchBox />
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2 text-sm text-fg-muted md:gap-3">
+        <span className="hidden tabular-nums sm:inline">{formatDateLabel(date)}</span>
+        <Link
+          href="/search/"
+          aria-label="검색"
+          className="rounded-md p-1.5 text-fg-muted hover:bg-bg-subtle hover:text-fg md:hidden"
+        >
+          <Search size={20} />
+        </Link>
         <ThemeToggle />
       </div>
     </header>
