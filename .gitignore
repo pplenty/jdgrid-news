@@ -36,3 +36,4 @@ scrape-*.log
 
 # claude code
 .claude/
+.gstack/
