@@ -12,6 +12,26 @@ import './globals.css';
 const PRETENDARD_CSS =
   'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 
+// ADR-0041 — 렌더 블로킹 회피: 외부 폰트 CSS 를 print 미디어로 비동기 첨부 후 'all' 로 스왑.
+// 첫 페인트는 시스템 폴백(Apple SD Gothic Neo / 맑은 고딕)으로 즉시 → Pretendard 로 교체(FOUT).
+// 폰트 실제 로드 완료 시 body.fonts-loaded → globals.css 자간 보정 해제로 reflow 완화.
+const FONT_LOAD_SCRIPT = `
+(function(){try{
+  var l=document.createElement('link');
+  l.rel='stylesheet';l.href=${JSON.stringify(PRETENDARD_CSS)};
+  l.crossOrigin='anonymous';l.media='print';
+  l.onload=function(){
+    this.media='all';
+    if(document.fonts&&document.fonts.ready){
+      document.fonts.ready.then(function(){
+        if(document.body)document.body.classList.add('fonts-loaded');
+      });
+    }
+  };
+  document.head.appendChild(l);
+}catch(_){}})();
+`.trim();
+
 export const metadata: Metadata = {
   title: 'trends — 오늘의 인사이트',
   description:
@@ -42,7 +62,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
-        <link rel="stylesheet" href={PRETENDARD_CSS} />
+        {/* ADR-0041: 폰트 CSS 비차단 로드 — 파서가 일찍 다운로드 시작(preload) + 스크립트로 스왑 첨부 */}
+        <link rel="preload" as="style" href={PRETENDARD_CSS} crossOrigin="anonymous" />
+        {/* eslint-disable-next-line react/no-danger */}
+        <script dangerouslySetInnerHTML={{ __html: FONT_LOAD_SCRIPT }} />
+        <noscript>
+          {/* JS 비활성 환경 폴백 — 동기 로드 */}
+          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+          <link rel="stylesheet" href={PRETENDARD_CSS} crossOrigin="anonymous" />
+        </noscript>
         {/* eslint-disable-next-line react/no-danger */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <JsonLd data={siteGraph()} />

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 /*
-  ADR-0009 (라이트/다크 테마 + 가독성 우선) + ADR-0015 (Pretendard).
-  Pretendard는 layout.tsx의 <link>로 로드. 폴백 체인은 tailwind.config.ts의 fontFamily.sans 참고.
+  ADR-0009 (라이트/다크 테마 + 가독성 우선) + ADR-0015 (Pretendard) + ADR-0041 (CWV).
+  Pretendard는 layout.tsx의 FONT_LOAD_SCRIPT로 비차단 로드(print→all 스왑). 폴백 체인은 tailwind.config.ts의 fontFamily.sans 참고.
 */
 
 :root {
@@ -63,6 +63,13 @@ a {
 }
 
 @layer utilities {
+  /* ADR-0041 — 화면 밖 섹션 렌더/레이아웃 지연(긴 대시보드 초기 페인트·메인스레드 비용 절감).
+     intrinsic-size 는 스크롤 점프 방지용 높이 추정치. 콘텐츠는 DOM 에 그대로 있어 색인 영향 없음. */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 520px;
+  }
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
     height: 8px;

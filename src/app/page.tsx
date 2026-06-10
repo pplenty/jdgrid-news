@@ -65,21 +65,44 @@ export default function HomePage() {
         <MoversSection kr={moversKr} global={moversGlobal} />
       )}
 
-      {wiki && <WikipediaSection ko={wiki.ko} en={wiki.en} />}
+      {/* ADR-0041 — 이하 화면 밖 섹션은 content-visibility:auto 로 초기 렌더 지연 */}
+      {wiki && (
+        <div className="cv-auto">
+          <WikipediaSection ko={wiki.ko} en={wiki.en} />
+        </div>
+      )}
 
-      {itunes && <ItunesSection music={itunes.music} apps={itunes.apps} />}
+      {itunes && (
+        <div className="cv-auto">
+          <ItunesSection music={itunes.music} apps={itunes.apps} />
+        </div>
+      )}
 
-      {youtube && youtube.length > 0 && <YouTubeSection videos={youtube} />}
+      {youtube && youtube.length > 0 && (
+        <div className="cv-auto">
+          <YouTubeSection videos={youtube} />
+        </div>
+      )}
 
-      {hn && hn.length > 0 && <HackerNewsSection stories={hn} />}
+      {hn && hn.length > 0 && (
+        <div className="cv-auto">
+          <HackerNewsSection stories={hn} />
+        </div>
+      )}
 
-      {reddit && reddit.length > 0 && <RedditSection posts={reddit} />}
+      {reddit && reddit.length > 0 && (
+        <div className="cv-auto">
+          <RedditSection posts={reddit} />
+        </div>
+      )}
 
       {naver && (
-        <NaverShoppingSection
-          keywordsByCategory={naver.keywordsByCategory}
-          categoryTrends={naver.categoryTrends}
-        />
+        <div className="cv-auto">
+          <NaverShoppingSection
+            keywordsByCategory={naver.keywordsByCategory}
+            categoryTrends={naver.categoryTrends}
+          />
+        </div>
       )}
     </>
   );
