@@ -41,15 +41,24 @@ export function TrendingHero({ kr, global, date }: Props) {
         </header>
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
-          <GeoBlock label="🇰🇷 한국" trends={kr} />
-          <GeoBlock label="🌐 글로벌" trends={global} />
+          {/* 최상단(선두 block) rank-1 이미지를 LCP 후보로 우선 로드 — ADR-0041 후속(모바일 LCP). */}
+          <GeoBlock label="🇰🇷 한국" trends={kr} priority={kr.length > 0} />
+          <GeoBlock label="🌐 글로벌" trends={global} priority={kr.length === 0} />
         </div>
       </div>
     </section>
   );
 }
 
-function GeoBlock({ label, trends }: { label: string; trends: Trend[] }) {
+function GeoBlock({
+  label,
+  trends,
+  priority = false,
+}: {
+  label: string;
+  trends: Trend[];
+  priority?: boolean;
+}) {
   if (trends.length === 0) return null;
   const first = trends[0];
   const middle = trends.slice(1, 3); // 2, 3위
@@ -65,7 +74,7 @@ function GeoBlock({ label, trends }: { label: string; trends: Trend[] }) {
       <div className="grid gap-3 sm:grid-cols-3">
         {first && (
           <div className="mx-auto w-2/3 sm:mx-0 sm:w-auto">
-            <BigCard rank={1} trend={first} />
+            <BigCard rank={1} trend={first} priority={priority} />
           </div>
         )}
         {middle.map((t, idx) => (
@@ -100,16 +109,26 @@ function GeoBlock({ label, trends }: { label: string; trends: Trend[] }) {
   );
 }
 
-function BigCard({ rank, trend }: { rank: number; trend: Trend }) {
+function BigCard({
+  rank,
+  trend,
+  priority = false,
+}: {
+  rank: number;
+  trend: Trend;
+  priority?: boolean;
+}) {
   return (
     <Link href={`/k/${encodeURIComponent(trend.keyword)}/`} className="group block">
       <div className="relative aspect-square overflow-hidden rounded-lg bg-bg-subtle ring-1 ring-border-subtle">
         {trend.picture ? (
+          // priority 카드(최상단)는 LCP 이므로 eager + high — 그 외는 lazy 유지.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={trend.picture}
             alt={trend.keyword}
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding="async"
             referrerPolicy="no-referrer"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
