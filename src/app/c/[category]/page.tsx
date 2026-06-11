@@ -1,5 +1,6 @@
 // 카테고리 페이지 — /c/[category]. 가로형 카드 리스트.
 
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
@@ -11,6 +12,25 @@ import { breadcrumb, categoryUrl, SITE_BASE } from '@/lib/jsonld';
 
 export function generateStaticParams() {
   return CATEGORY_IDS.map((id) => ({ category: id }));
+}
+
+// 카테고리별 고유 메타 (ADR-0040 후속).
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+  const id = (await params).category as CategoryId;
+  if (!CATEGORY_IDS.includes(id)) return {};
+  const label = CATEGORY_LABELS[id];
+  const description = `${label.ko}(${label.en}) 분야 오늘의 국내·해외 트렌드와 수집 헤드라인.`;
+  const canonical = `/c/${id}/`;
+  return {
+    title: `${label.ko} 트렌드·헤드라인 | trends`,
+    description,
+    alternates: { canonical },
+    openGraph: { title: `${label.ko} 트렌드`, description, url: canonical },
+  };
 }
 
 export default async function CategoryPage({

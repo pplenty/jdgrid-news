@@ -1,5 +1,6 @@
 // /k/[keyword] — ADR-0028. 키워드 통합 카드 (signals + Wikipedia + 매체 분포 + 기존 두 섹션).
 
+import type { Metadata } from 'next';
 import { BookOpen, ExternalLink, Globe2, Hash, Newspaper, TrendingUp } from 'lucide-react';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
@@ -35,6 +36,27 @@ function decodeKeyword(raw: string): string {
   } catch {
     return raw;
   }
+}
+
+// 키워드별 고유 메타 (ADR-0040 후속) — 60+ 동적 페이지의 제네릭 title 중복 해소.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ keyword: string }>;
+}): Promise<Metadata> {
+  const keyword = decodeKeyword((await params).keyword);
+  if (!keyword) return { title: '키워드 — trends' };
+  const trend = findTrendByKeyword(loadLatest(), keyword);
+  const description =
+    trend?.description?.trim() ||
+    `‘${keyword}’ 오늘의 검색 트렌드${trend?.traffic ? ` (${trend.traffic})` : ''}, 위키피디아 관심도, 관련 뉴스를 한곳에서.`;
+  const canonical = `/k/${encodeURIComponent(keyword)}/`;
+  return {
+    title: `${keyword} — 트렌드 신호·관련 뉴스 | trends`,
+    description,
+    alternates: { canonical },
+    openGraph: { title: `${keyword} — 트렌드`, description, url: canonical },
+  };
 }
 
 export default async function KeywordPage({

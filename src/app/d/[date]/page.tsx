@@ -1,5 +1,6 @@
 // 날짜 페이지 — /d/[date]. 과거 일자 메인 (PLAN §6 — 최근 30~90일치 정적 생성).
 
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
@@ -17,6 +18,23 @@ export function generateStaticParams() {
   return listSnapshotDates()
     .slice(0, 90)
     .map((date) => ({ date }));
+}
+
+// 날짜별 고유 메타 (ADR-0040 후속).
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ date: string }>;
+}): Promise<Metadata> {
+  const { date } = await params;
+  const description = `${formatDateLabel(date)} 국내·해외 검색·뉴스·트렌드 스냅샷.`;
+  const canonical = `/d/${date}/`;
+  return {
+    title: `${date} 트렌드 다이제스트 | trends`,
+    description,
+    alternates: { canonical },
+    openGraph: { title: `${date} 트렌드`, description, url: canonical },
+  };
 }
 
 export default async function DatePage({
