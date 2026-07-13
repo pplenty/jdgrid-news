@@ -4,3 +4,15 @@
 /opengraph-image
   Content-Type: image/png
   Cache-Control: public, max-age=86400
+
+# 페이지별 동적 OG 이미지 (ADR-0043) — 마찬가지로 확장자 없는 PNG.
+# URL 은 캐시버스터(?hash / ?v=날짜)로 매일 갱신되므로 장기 캐시 안전.
+/c/:category/opengraph-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400
+/d/:date/opengraph-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400
+/og/k/:keyword
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400
