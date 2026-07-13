@@ -17,25 +17,10 @@ import {
 import { breadcrumb, keywordUrl, SITE_BASE } from '@/lib/jsonld';
 import type { GoogleNewsItem, WikiTrend } from '@/lib/types';
 
-export function generateStaticParams() {
-  const snapshot = loadLatest();
-  const keywords = new Set<string>();
-  for (const t of [...snapshot.trends.global, ...snapshot.trends.kr]) {
-    if (t.keyword) keywords.add(t.keyword);
-  }
-  // raw 키워드 반환 — Next 가 파일시스템/URL 인코딩 담당. 여기서 encodeURIComponent 하면
-  // Next 가 한 번 더 인코딩해(이중) 비-ASCII(한글) 페이지가 인코딩 문자열로 렌더됨 (ADR-0028 회귀).
-  return [...keywords].map((keyword) => ({ keyword }));
-}
+import { decodeKeyword, keywordStaticParams } from './params';
 
-// Next 버전/플랫폼에 따라 param 이 디코드/단일인코딩으로 올 수 있어 안전 디코드.
-// 이미 디코드된 값(% 없음)은 무변, 인코딩 값은 1회 디코드, '%' 리터럴 등 오류는 원값 유지.
-function decodeKeyword(raw: string): string {
-  try {
-    return decodeURIComponent(raw);
-  } catch {
-    return raw;
-  }
+export function generateStaticParams() {
+  return keywordStaticParams();
 }
 
 // 키워드별 고유 메타 (ADR-0040 후속) — 60+ 동적 페이지의 제네릭 title 중복 해소.
@@ -46,16 +31,26 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const keyword = decodeKeyword((await params).keyword);
   if (!keyword) return { title: '키워드 — trends' };
-  const trend = findTrendByKeyword(loadLatest(), keyword);
+  const snapshot = loadLatest();
+  const trend = findTrendByKeyword(snapshot, keyword);
   const description =
     trend?.description?.trim() ||
     `‘${keyword}’ 오늘의 검색 트렌드${trend?.traffic ? ` (${trend.traffic})` : ''}, 위키피디아 관심도, 관련 뉴스를 한곳에서.`;
   const canonical = `/k/${encodeURIComponent(keyword)}/`;
+  // 키워드 OG 이미지 (ADR-0043) — 파일 컨벤션은 비-ASCII 파라미터 URL 을 이중 인코딩해
+  // 라우트 핸들러(/og/k)를 수동 참조. ?v= 는 일자 캐시버스터(내용이 매일 갱신됨).
+  const ogImage = {
+    url: `/og/k/${encodeURIComponent(keyword)}?v=${snapshot.date}`,
+    width: 1200,
+    height: 630,
+    alt: `${keyword} — 트렌드`,
+  };
   return {
     title: `${keyword} — 트렌드 신호·관련 뉴스 | trends`,
     description,
     alternates: { canonical },
-    openGraph: { title: `${keyword} — 트렌드`, description, url: canonical },
+    openGraph: { title: `${keyword} — 트렌드`, description, url: canonical, images: [ogImage] },
+    twitter: { card: 'summary_large_image', images: [ogImage.url] },
   };
 }
 
