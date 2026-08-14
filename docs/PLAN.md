@@ -241,6 +241,13 @@
 - [ADR-0035 — keyword extraction v1 형태소 명사 추출 (garu-ko WASM, ADR-0014 발전)](./adr/0035-keyword-extraction-v1-morphological.md)
 - [ADR-0036 — keyword extraction v1 영어 형태소 (compromise, ADR-0035 보완)](./adr/0036-keyword-extraction-v1-english-morphological.md)
 - [ADR-0037 — keyword extraction v1 복합명사 병합 (garu analyze span, ADR-0035 발전)](./adr/0037-keyword-extraction-v1-compound-merge.md)
+- [ADR-0038 — EN source 품질: 커머스/딜 글 수집 단계 필터](./adr/0038-en-source-commerce-deals-filter.md)
+- [ADR-0039 — 일일 트렌드 브리핑: 데이터 기반 원천 텍스트 요약](./adr/0039-daily-trend-briefing.md)
+- [ADR-0040 — SEO 구조화: JSON-LD + OG 이미지 + 검색엔진 등록](./adr/0040-seo-structured-data-og-image.md)
+- [ADR-0041 — 성능/CWV: 비차단 폰트 로딩 + content-visibility](./adr/0041-performance-cwv-font-loading.md)
+- [ADR-0042 — 사이트 내 검색: 빌드타임 인덱스 + 클라이언트 필터 + SearchAction](./adr/0042-site-search.md)
+- [ADR-0043 — 페이지별 동적 OG 이미지: 빌드타임 생성 + 한글 폰트 devDependency](./adr/0043-per-page-dynamic-og-images.md)
+- [ADR-0044 — 키워드 페이지 영속화: 90일 보존 창 + 마지막 등장일 스냅샷](./adr/0044-keyword-page-persistence.md)
 
 ---
 
