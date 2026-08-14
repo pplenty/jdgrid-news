@@ -4,6 +4,7 @@ import type { MetadataRoute } from 'next';
 
 import { CATEGORY_IDS } from '@/lib/categories';
 import { listSnapshotDates, loadLatest } from '@/lib/data';
+import { listKeywordEntries } from '@/lib/keyword-index';
 
 // output: 'export' 호환 — force-static으로 빌드 시점에 정적 생성.
 export const dynamic = 'force-static';
@@ -39,15 +40,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     }));
 
-  const keywords = new Set<string>();
-  for (const t of [...snapshot.trends.kr, ...snapshot.trends.global]) {
-    if (t.keyword) keywords.add(t.keyword);
-  }
-  const keywordPages: MetadataRoute.Sitemap = [...keywords].map((k) => ({
-    url: `${BASE}/k/${encodeURIComponent(k)}/`,
-    lastModified,
-    changeFrequency: 'daily',
-    priority: 0.4,
+  // 보존 창(90일) 안의 키워드 전부 등재 — 페이지가 살아있는 범위와 일치시킨다 (ADR-0044).
+  // lastModified 는 마지막 등장일이라 과거 키워드는 자연히 낮은 신선도로 신호된다.
+  const keywordPages: MetadataRoute.Sitemap = listKeywordEntries().map((entry) => ({
+    url: `${BASE}/k/${encodeURIComponent(entry.keyword)}/`,
+    lastModified: entry.dates[0],
+    changeFrequency: entry.dates[0] === lastModified ? 'daily' : 'monthly',
+    priority: entry.dates[0] === lastModified ? 0.4 : 0.3,
   }));
 
   return [...staticPages, ...categoryPages, ...datePages, ...keywordPages];

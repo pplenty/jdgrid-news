@@ -4,7 +4,8 @@
 // 라우트 핸들러 + generateMetadata 수동 참조로 URL 인코딩을 우리가 제어(단일 인코딩).
 
 import { decodeKeyword, keywordStaticParams } from '@/app/k/[keyword]/params';
-import { findTrendByKeyword, loadLatest } from '@/lib/data';
+import { findTrendByKeyword } from '@/lib/data';
+import { findKeywordEntry, loadKeywordSnapshot } from '@/lib/keyword-index';
 import { renderOgImage } from '@/lib/og-template';
 import { formatDateLabel } from '@/lib/utils';
 
@@ -19,13 +20,15 @@ export async function GET(
   { params }: { params: Promise<{ keyword: string }> },
 ) {
   const keyword = decodeKeyword((await params).keyword);
-  const snapshot = loadLatest();
-  const trend = findTrendByKeyword(snapshot, keyword);
+  // 마지막 등장일 스냅샷 기준 — 과거 키워드도 그날의 검색량·날짜로 렌더 (ADR-0044).
+  const entry = findKeywordEntry(keyword);
+  const snapshot = entry ? loadKeywordSnapshot(entry) : null;
+  const trend = snapshot ? findTrendByKeyword(snapshot, keyword) : undefined;
   const subtitle = [
     trend?.traffic ? `검색량 ${trend.traffic}` : null,
-    formatDateLabel(snapshot.date),
+    snapshot ? formatDateLabel(snapshot.date) : null,
   ]
     .filter(Boolean)
     .join(' · ');
-  return renderOgImage({ badge: '오늘의 검색 트렌드', title: keyword, subtitle });
+  return renderOgImage({ badge: '검색 트렌드', title: keyword, subtitle });
 }

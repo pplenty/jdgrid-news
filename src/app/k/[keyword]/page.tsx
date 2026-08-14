@@ -1,7 +1,16 @@
 // /k/[keyword] — ADR-0028. 키워드 통합 카드 (signals + Wikipedia + 매체 분포 + 기존 두 섹션).
 
 import type { Metadata } from 'next';
-import { BookOpen, ExternalLink, Globe2, Hash, Newspaper, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import {
+  BookOpen,
+  CalendarDays,
+  ExternalLink,
+  Globe2,
+  Hash,
+  Newspaper,
+  TrendingUp,
+} from 'lucide-react';
 
 import { ArticleCard } from '@/app/_components/ArticleCard';
 import { EmptyState } from '@/app/_components/EmptyState';
@@ -12,12 +21,17 @@ import {
   findTrendByKeyword,
   findWikiByKeyword,
   groupArticlesBySource,
-  loadLatest,
+  listSnapshotDates,
 } from '@/lib/data';
 import { breadcrumb, keywordUrl, SITE_BASE } from '@/lib/jsonld';
+import { findKeywordEntry, loadKeywordSnapshot, type KeywordEntry } from '@/lib/keyword-index';
 import type { GoogleNewsItem, WikiTrend } from '@/lib/types';
+import { formatDateLabel } from '@/lib/utils';
 
 import { decodeKeyword, keywordStaticParams } from './params';
+
+/** 타임라인에 링크로 펼칠 최대 일자 수 — '미국'(82일) 같은 상시 키워드 대비. */
+const TIMELINE_MAX_DATES = 14;
 
 export function generateStaticParams() {
   return keywordStaticParams();
@@ -31,16 +45,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const keyword = decodeKeyword((await params).keyword);
   if (!keyword) return { title: '키워드 — trends' };
-  const snapshot = loadLatest();
-  const trend = findTrendByKeyword(snapshot, keyword);
+  const entry = findKeywordEntry(keyword);
+  const snapshot = entry ? loadKeywordSnapshot(entry) : null;
+  const trend = snapshot ? findTrendByKeyword(snapshot, keyword) : undefined;
+  // 과거 키워드는 '오늘' 이 아니라 마지막 등장일 기준임을 문장에서도 분명히 (ADR-0044).
+  const day = entry && isLatest(entry) ? '오늘의' : `${entry?.dates[0] ?? ''} 기준`;
   const description =
     trend?.description?.trim() ||
-    `‘${keyword}’ 오늘의 검색 트렌드${trend?.traffic ? ` (${trend.traffic})` : ''}, 위키피디아 관심도, 관련 뉴스를 한곳에서.`;
+    `‘${keyword}’ ${day} 검색 트렌드${trend?.traffic ? ` (${trend.traffic})` : ''}, 위키피디아 관심도, 관련 뉴스를 한곳에서.`;
   const canonical = `/k/${encodeURIComponent(keyword)}/`;
   // 키워드 OG 이미지 (ADR-0043) — 파일 컨벤션은 비-ASCII 파라미터 URL 을 이중 인코딩해
-  // 라우트 핸들러(/og/k)를 수동 참조. ?v= 는 일자 캐시버스터(내용이 매일 갱신됨).
+  // 라우트 핸들러(/og/k)를 수동 참조. ?v= 는 마지막 등장일 캐시버스터.
   const ogImage = {
-    url: `/og/k/${encodeURIComponent(keyword)}?v=${snapshot.date}`,
+    url: `/og/k/${encodeURIComponent(keyword)}?v=${entry?.dates[0] ?? ''}`,
     width: 1200,
     height: 630,
     alt: `${keyword} — 트렌드`,
@@ -54,6 +71,11 @@ export async function generateMetadata({
   };
 }
 
+/** 마지막 등장일이 가장 최신 스냅샷인가 = '오늘의 트렌드' 인가. */
+function isLatest(entry: KeywordEntry): boolean {
+  return entry.dates[0] === listSnapshotDates()[0];
+}
+
 export default async function KeywordPage({
   params,
 }: {
@@ -61,15 +83,20 @@ export default async function KeywordPage({
 }) {
   const { keyword: raw } = await params;
   const keyword = decodeKeyword(raw);
-  if (!keyword) {
+  const entry = keyword ? findKeywordEntry(keyword) : undefined;
+  const snapshot = entry ? loadKeywordSnapshot(entry) : null;
+  if (!keyword || !entry || !snapshot) {
     return (
       <div className="px-4 py-8 lg:px-8">
-        <EmptyState title="키워드가 없어요" />
+        <EmptyState
+          title="키워드가 없어요"
+          description="최근 90일 트렌드에 등장하지 않은 키워드입니다."
+        />
       </div>
     );
   }
 
-  const snapshot = loadLatest();
+  const archived = !isLatest(entry);
   const trend = findTrendByKeyword(snapshot, keyword);
   const ourArticles = findArticlesByKeyword(snapshot, keyword);
   const googleArticles = trend?.googleArticles ?? [];
@@ -97,6 +124,21 @@ export default async function KeywordPage({
         </div>
         {trend?.description && (
           <p className="mt-2 pl-7 text-sm text-fg-muted">{trend.description}</p>
+        )}
+
+        {/* 과거 키워드 — 이 페이지가 어느 시점 기준인지 먼저 알린다 (ADR-0044). */}
+        {archived && (
+          <p className="mt-3 ml-7 inline-flex flex-wrap items-center gap-1.5 rounded-md border border-border-subtle bg-bg-subtle px-3 py-1.5 text-xs text-fg-muted">
+            <CalendarDays size={12} className="shrink-0 text-fg-subtle" aria-hidden />
+            <span>
+              마지막으로 트렌드에 오른 <strong className="font-semibold text-fg">
+                {formatDateLabel(snapshot.date)}
+              </strong> 기준입니다.
+            </span>
+            <Link href="/" className="font-semibold text-accent-fg hover:underline">
+              오늘의 트렌드 보기 →
+            </Link>
+          </p>
         )}
 
         {/* Signal chips */}
@@ -128,8 +170,13 @@ export default async function KeywordPage({
               value={`${googleArticles.length}건`}
             />
           )}
+          {entry.dates.length > 1 && (
+            <SignalChip icon={CalendarDays} label="등장" value={`${entry.dates.length}일`} />
+          )}
         </div>
       </header>
+
+      <KeywordTimeline entry={entry} />
 
       {/* Wikipedia mini cards */}
       {(wiki.ko || wiki.en) && (
@@ -203,6 +250,41 @@ export default async function KeywordPage({
         />
       )}
     </div>
+  );
+}
+
+/**
+ * 이 키워드가 트렌드에 올랐던 날들 → 해당 일자 다이제스트(/d)로 링크 (ADR-0044).
+ * 하루만 등장한 키워드(전체의 약 80%)엔 보여줄 게 없으므로 생략한다.
+ */
+function KeywordTimeline({ entry }: { entry: KeywordEntry }) {
+  if (entry.dates.length < 2) return null;
+  const shown = entry.dates.slice(0, TIMELINE_MAX_DATES);
+  const hidden = entry.dates.length - shown.length;
+  return (
+    <section className="mb-8">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-fg-muted">
+        트렌드에 오른 날 · {entry.dates.length}일
+      </h2>
+      <ul className="flex flex-wrap gap-2">
+        {shown.map((date) => (
+          <li key={date}>
+            <Link
+              href={`/d/${date}/`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-bg px-3 py-1 text-xs text-fg-muted transition-colors hover:border-border hover:bg-bg-subtle hover:text-fg"
+            >
+              <CalendarDays size={11} className="shrink-0 text-fg-subtle" aria-hidden />
+              <span className="tabular-nums">{date}</span>
+            </Link>
+          </li>
+        ))}
+        {hidden > 0 && (
+          <li className="inline-flex items-center px-1 text-xs text-fg-subtle">
+            외 {hidden}일
+          </li>
+        )}
+      </ul>
+    </section>
   );
 }
 

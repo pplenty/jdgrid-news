@@ -1,16 +1,13 @@
 // /k/[keyword] 세그먼트 공용 파라미터 헬퍼 — page 와 opengraph-image 가 공유.
 
-import { loadLatest } from '@/lib/data';
+import { listKeywordEntries } from '@/lib/keyword-index';
 
+// 보존 창(90일) 안에 등장한 모든 키워드 — 최신 스냅샷만 쓰면 어제 색인된 URL 이
+// 오늘 빌드에서 사라진다 (ADR-0044).
 export function keywordStaticParams(): Array<{ keyword: string }> {
-  const snapshot = loadLatest();
-  const keywords = new Set<string>();
-  for (const t of [...snapshot.trends.global, ...snapshot.trends.kr]) {
-    if (t.keyword) keywords.add(t.keyword);
-  }
   // raw 키워드 반환 — Next 가 파일시스템/URL 인코딩 담당. 여기서 encodeURIComponent 하면
   // Next 가 한 번 더 인코딩해(이중) 비-ASCII(한글) 페이지가 인코딩 문자열로 렌더됨 (ADR-0028 회귀).
-  return [...keywords].map((keyword) => ({ keyword }));
+  return listKeywordEntries().map(({ keyword }) => ({ keyword }));
 }
 
 // Next 버전/플랫폼에 따라 param 이 디코드/단일인코딩으로 올 수 있어 안전 디코드.
