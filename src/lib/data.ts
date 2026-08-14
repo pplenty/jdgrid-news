@@ -42,12 +42,21 @@ export function listSnapshotDates(): string[] {
   }
 }
 
+/** 사이드바 트렌딩 칩이 실제로 렌더하는 두 필드만. */
+export type SidebarTrend = { keyword: string; traffic?: string };
+
 export type SidebarData = {
   date: string;
   counts: Record<CategoryId, number>;
-  trends: { global: Trend[]; kr: Trend[] };
+  trends: { global: SidebarTrend[]; kr: SidebarTrend[] };
 };
 
+/** 사이드바가 지역별로 보여주는 최대 개수 — 자르는 지점은 여기 한 곳. */
+export const SIDEBAR_TREND_LIMIT = 6;
+
+// 이 반환값은 client component(ClientShell/Sidebar) 경계를 넘으므로 **모든 페이지의**
+// RSC 페이로드에 직렬화된다. snapshot.trends 를 통째로 넘기면 stories/wikipedia/naver/
+// itunes/derived/hackernews 까지 실려 페이지당 226KB 가 붙었다 → 렌더에 쓰는 필드만 추린다.
 export function toSidebarData(snapshot: DailySnapshot): SidebarData {
   const counts = Object.fromEntries(
     CATEGORY_IDS.map((id) => {
@@ -59,8 +68,17 @@ export function toSidebarData(snapshot: DailySnapshot): SidebarData {
   return {
     date: snapshot.date,
     counts,
-    trends: snapshot.trends,
+    trends: {
+      kr: toSidebarTrends(snapshot.trends.kr),
+      global: toSidebarTrends(snapshot.trends.global),
+    },
   };
+}
+
+function toSidebarTrends(trends: ReadonlyArray<Trend>): SidebarTrend[] {
+  return trends
+    .slice(0, SIDEBAR_TREND_LIMIT)
+    .map(({ keyword, traffic }) => (traffic ? { keyword, traffic } : { keyword }));
 }
 
 export function getCategoryItems(snapshot: DailySnapshot, id: CategoryId): Article[] {

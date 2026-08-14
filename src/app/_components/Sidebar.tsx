@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from '@/lib/categories';
-import type { SidebarData } from '@/lib/data';
-import type { Trend } from '@/lib/types';
+import type { SidebarData, SidebarTrend } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 import { CATEGORY_ICONS } from './categoryIcons';
@@ -239,7 +238,8 @@ function TrendBlock({
   onNavigate,
 }: {
   label: string;
-  trends: Trend[];
+  /** 이미 toSidebarData 에서 SIDEBAR_TREND_LIMIT 개로 잘려 옴. */
+  trends: SidebarTrend[];
   onNavigate?: () => void;
 }) {
   if (trends.length === 0) {
@@ -254,7 +254,7 @@ function TrendBlock({
     <div className="mt-3 px-2">
       <p className="mb-1.5 text-xs font-medium text-fg-muted">{label}</p>
       <ol className="space-y-0.5">
-        {trends.slice(0, 6).map((t, idx) => (
+        {trends.map((t, idx) => (
           <li key={t.keyword}>
             <Link
               href={`/k/${encodeURIComponent(t.keyword)}/`}
