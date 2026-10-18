@@ -64,14 +64,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         {/* ADR-0041: 폰트 CSS 비차단 로드 — 파서가 일찍 다운로드 시작(preload) + 스크립트로 스왑 첨부 */}
         <link rel="preload" as="style" href={PRETENDARD_CSS} crossOrigin="anonymous" />
-        {/* eslint-disable-next-line react/no-danger */}
         <script dangerouslySetInnerHTML={{ __html: FONT_LOAD_SCRIPT }} />
         <noscript>
           {/* JS 비활성 환경 폴백 — 동기 로드 */}
-          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
           <link rel="stylesheet" href={PRETENDARD_CSS} crossOrigin="anonymous" />
         </noscript>
-        {/* eslint-disable-next-line react/no-danger */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <JsonLd data={siteGraph()} />
       </head>
