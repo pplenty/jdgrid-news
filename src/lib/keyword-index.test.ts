@@ -26,11 +26,27 @@ describe('buildKeywordIndex', () => {
   });
 
   it('does not depend on input order', () => {
-    const snapshots = [snap('2026-08-01', ['a']), snap('2026-08-03', ['a']), snap('2026-08-02', ['a'])];
+    const snapshots = [
+      snap('2026-08-01', ['a']),
+      snap('2026-08-03', ['a']),
+      snap('2026-08-02', ['a']),
+    ];
     const forward = buildKeywordIndex(snapshots);
     const reversed = buildKeywordIndex([...snapshots].reverse());
     expect(forward.get('a')?.dates).toEqual(['2026-08-03', '2026-08-02', '2026-08-01']);
     expect(reversed.get('a')?.dates).toEqual(forward.get('a')?.dates);
+  });
+
+  it('keeps the traffic of the last-seen day only', () => {
+    const index = buildKeywordIndex([
+      { date: '2026-08-10', trends: { kr: [trend('미국', '50K+')], global: [] } },
+      { date: '2026-08-12', trends: { kr: [trend('미국', '200K+')], global: [] } },
+      { date: '2026-08-11', trends: { kr: [trend('반도체')], global: [] } },
+    ]);
+    expect(index.get('미국')?.traffic).toBe('200K+');
+    // 검색량이 없으면 키 자체가 없다 (undefined 로 직렬화되지 않게)
+    expect(index.get('반도체')).toEqual({ keyword: '반도체', dates: ['2026-08-11'] });
+    expect('traffic' in index.get('반도체')!).toBe(false);
   });
 
   it('records a date once when the keyword is in both kr and global', () => {

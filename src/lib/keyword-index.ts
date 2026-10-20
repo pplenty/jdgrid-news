@@ -15,6 +15,8 @@ export type KeywordEntry = {
   keyword: string;
   /** 등장한 스냅샷 일자, 최신 우선. dates[0] 가 마지막 등장일. */
   dates: string[];
+  /** 마지막 등장일의 검색량 (예: "200K+") — 검색 결과 부가 정보 (ADR-0045). */
+  traffic?: string;
 };
 
 /** buildKeywordIndex 가 필요로 하는 최소 형태 — 테스트에서 가볍게 만들 수 있게. */
@@ -46,8 +48,15 @@ export function buildKeywordIndex(
 
       const existing = index.get(key);
       if (existing) existing.dates.push(snapshot.date);
-      // 최신 일자부터 도니 처음 만난 표기가 가장 최근 표기.
-      else index.set(key, { keyword, dates: [snapshot.date] });
+      // 최신 일자부터 도니 처음 만난 표기가 가장 최근 표기 — 검색량도 그 트렌드 것
+      // (= /k 페이지가 findTrendByKeyword 로 집는 것과 같은 항목).
+      else
+        index.set(
+          key,
+          trend.traffic
+            ? { keyword, dates: [snapshot.date], traffic: trend.traffic }
+            : { keyword, dates: [snapshot.date] },
+        );
     }
   }
   return index;
