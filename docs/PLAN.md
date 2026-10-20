@@ -248,6 +248,7 @@
 - [ADR-0042 — 사이트 내 검색: 빌드타임 인덱스 + 클라이언트 필터 + SearchAction](./adr/0042-site-search.md)
 - [ADR-0043 — 페이지별 동적 OG 이미지: 빌드타임 생성 + 한글 폰트 devDependency](./adr/0043-per-page-dynamic-og-images.md)
 - [ADR-0044 — 키워드 페이지 영속화: 90일 보존 창 + 마지막 등장일 스냅샷](./adr/0044-keyword-page-persistence.md)
+- [ADR-0045 — 다중일 검색: 키워드 90일 + 기사 7일, 별도 JSON 인덱스, 최신성 가중](./adr/0045-multi-day-search.md)
 
 ---
 
