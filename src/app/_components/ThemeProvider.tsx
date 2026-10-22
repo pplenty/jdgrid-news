@@ -43,6 +43,11 @@ function readStored(): Theme {
 const serverTheme = (): Theme => 'system';
 const serverSystem = (): 'light' | 'dark' => 'light';
 
+// 하이드레이션 패스 여부 — 서버 스냅샷 동안은 false, 직후 재렌더부터 true.
+const subscribeNothing = () => () => {};
+const clientHydrated = () => true;
+const serverHydrated = () => false;
+
 function applyResolved(resolved: 'light' | 'dark'): void {
   if (typeof document === 'undefined') return;
   document.documentElement.classList.toggle('dark', resolved === 'dark');
@@ -52,11 +57,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useSyncExternalStore(subscribeLocalStorage, readStored, serverTheme);
   const systemResolved = useSyncExternalStore(subscribeSystem, readSystem, serverSystem);
 
+  const hydrated = useSyncExternalStore(subscribeNothing, clientHydrated, serverHydrated);
   const resolved = theme === 'system' ? systemResolved : theme;
 
+  // 하이드레이션 패스의 resolved 는 서버 기본값(light)이라, 이때 적용하면 INIT 스크립트가 붙인
+  // dark 를 떼었다가 다시 붙이며 한 프레임 깜빡인다(프로덕션에서 측정) → 실제 값부터 적용.
   useEffect(() => {
-    applyResolved(resolved);
-  }, [resolved]);
+    if (hydrated) applyResolved(resolved);
+  }, [hydrated, resolved]);
 
   function setTheme(t: Theme) {
     writeLocalStorage(STORAGE_KEY, t === 'system' ? null : t);
