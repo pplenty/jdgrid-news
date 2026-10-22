@@ -4,15 +4,23 @@
 // ADR-0009 가변 폭(접기) 약속 이행 — 데스크탑에서 사이드바 토글, LocalStorage 기억.
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { CATEGORY_IDS, type CategoryId } from '@/lib/categories';
 import type { SidebarData } from '@/lib/data';
+import {
+  readLocalStorage,
+  subscribeLocalStorage,
+  writeLocalStorage,
+} from '@/lib/local-storage-store';
 
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 
 const COLLAPSED_KEY = 'jdgrid-sidebar-collapsed';
+
+const readCollapsed = () => readLocalStorage(COLLAPSED_KEY) === '1';
+const serverCollapsed = () => false;
 
 function extractActiveCategory(pathname: string | null): CategoryId | undefined {
   if (!pathname) return undefined;
@@ -33,28 +41,20 @@ export function ClientShell({
 }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [drawerPathname, setDrawerPathname] = useState(pathname);
+  // LocalStorage 에 기억한 접힘 상태 — 정적 HTML 은 펼친 상태로 그리고 하이드레이션 직후 반영.
+  const collapsed = useSyncExternalStore(subscribeLocalStorage, readCollapsed, serverCollapsed);
   const activeCategory = extractActiveCategory(pathname);
 
-  // 초기 로드 시 LocalStorage 반영.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (window.localStorage.getItem(COLLAPSED_KEY) === '1') setCollapsed(true);
-  }, []);
-
-  // 경로 변경 시 드로어 닫기 (모바일에서 카테고리 클릭 후).
-  useEffect(() => {
+  // 경로 변경 시 드로어 닫기 (모바일에서 카테고리 클릭 후). effect 대신 렌더 중 이전 경로와
+  // 비교 — React 권장 "prop 변경 시 state 조정" 패턴.
+  if (pathname !== drawerPathname) {
+    setDrawerPathname(pathname);
     setDrawerOpen(false);
-  }, [pathname]);
+  }
 
   function toggleCollapsed() {
-    setCollapsed((c) => {
-      const next = !c;
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0');
-      }
-      return next;
-    });
+    writeLocalStorage(COLLAPSED_KEY, collapsed ? '0' : '1');
   }
 
   return (

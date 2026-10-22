@@ -3,7 +3,13 @@
 // ADR-0009: 시스템 follow + 사용자 토글 (system/light/dark 3-state) + LocalStorage 저장 + FOUC 방지.
 // 사전 적용은 layout.tsx의 ThemeScript(inline) 가 페이지 첫 페인트 전에 처리.
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useSyncExternalStore, type ReactNode } from 'react';
+
+import {
+  readLocalStorage,
+  subscribeLocalStorage,
+  writeLocalStorage,
+} from '@/lib/local-storage-store';
 
 export type Theme = 'system' | 'light' | 'dark';
 const STORAGE_KEY = 'jdgrid-theme';
@@ -16,16 +22,26 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+const DARK_QUERY = '(prefers-color-scheme: dark)';
+
 function readSystem(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return window.matchMedia?.(DARK_QUERY).matches ? 'dark' : 'light';
+}
+
+function subscribeSystem(onChange: () => void): () => void {
+  const mql = window.matchMedia(DARK_QUERY);
+  mql.addEventListener('change', onChange);
+  return () => mql.removeEventListener('change', onChange);
 }
 
 function readStored(): Theme {
-  if (typeof window === 'undefined') return 'system';
-  const v = window.localStorage.getItem(STORAGE_KEY);
+  const v = readLocalStorage(STORAGE_KEY);
   return v === 'light' || v === 'dark' || v === 'system' ? v : 'system';
 }
+
+// 서버 스냅샷 = 기본값. 첫 페인트는 layout 의 THEME_INIT_SCRIPT 가 이미 맞춰 둔다.
+const serverTheme = (): Theme => 'system';
+const serverSystem = (): 'light' | 'dark' => 'light';
 
 function applyResolved(resolved: 'light' | 'dark'): void {
   if (typeof document === 'undefined') return;
@@ -33,17 +49,8 @@ function applyResolved(resolved: 'light' | 'dark'): void {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [systemResolved, setSystemResolved] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    setThemeState(readStored());
-    setSystemResolved(readSystem());
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => setSystemResolved(mql.matches ? 'dark' : 'light');
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
+  const theme = useSyncExternalStore(subscribeLocalStorage, readStored, serverTheme);
+  const systemResolved = useSyncExternalStore(subscribeSystem, readSystem, serverSystem);
 
   const resolved = theme === 'system' ? systemResolved : theme;
 
@@ -52,11 +59,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [resolved]);
 
   function setTheme(t: Theme) {
-    setThemeState(t);
-    if (typeof window !== 'undefined') {
-      if (t === 'system') window.localStorage.removeItem(STORAGE_KEY);
-      else window.localStorage.setItem(STORAGE_KEY, t);
-    }
+    writeLocalStorage(STORAGE_KEY, t === 'system' ? null : t);
   }
 
   return (

@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ExternalLink, Hash, Layers, Newspaper, Search } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import {
   resultDateLabel,
@@ -24,6 +24,11 @@ const GROUPS: { type: SearchDocType; label: string; icon: typeof Hash }[] = [
   { type: 'article', label: '뉴스', icon: Newspaper },
 ];
 
+// ?q= 진입값(SearchAction·공유 링크 랜딩). URL 은 구독할 변화가 없어 noop 구독.
+const subscribeNothing = () => () => {};
+const readUrlQuery = () => new URLSearchParams(window.location.search).get('q') ?? '';
+const serverUrlQuery = () => '';
+
 type SearchClientProps = {
   /** 캐시버스터(?v=날짜)가 붙은 인덱스 경로. */
   indexUrl: string;
@@ -33,9 +38,12 @@ type SearchClientProps = {
 
 export function SearchClient({ indexUrl, keywordDays, articleDays }: SearchClientProps) {
   const router = useRouter();
-  // 정적 HTML 에 검색 UI 가 그대로 들어가도록 q 는 빈값으로 시작 → 마운트 시 ?q= 반영.
+  // 정적 HTML 에 검색 UI 가 그대로 들어가도록 q 는 빈값으로 시작 → 하이드레이션 직후 ?q= 반영.
   // (useSearchParams 는 Suspense·fallback 을 강제해 정적 출력이 비어버림.)
-  const [q, setQ] = useState('');
+  const urlQuery = useSyncExternalStore(subscribeNothing, readUrlQuery, serverUrlQuery);
+  // 사용자가 입력하기 전까지는 URL 값을 그대로 쓴다.
+  const [typed, setTyped] = useState<string | null>(null);
+  const q = typed ?? urlQuery;
   const inputRef = useRef<HTMLInputElement>(null);
   const [index, setIndex] = useState<SearchIndex | null>(null);
   const [failed, setFailed] = useState(false);
@@ -64,10 +72,8 @@ export function SearchClient({ indexUrl, keywordDays, articleDays }: SearchClien
     };
   }, [indexUrl]);
 
-  // 진입 시 ?q= 반영(SearchAction·공유 링크 랜딩) + 자동 포커스.
+  // 진입 시 자동 포커스.
   useEffect(() => {
-    const initial = new URLSearchParams(window.location.search).get('q');
-    if (initial) setQ(initial);
     inputRef.current?.focus();
   }, []);
 
@@ -102,7 +108,7 @@ export function SearchClient({ indexUrl, keywordDays, articleDays }: SearchClien
           ref={inputRef}
           type="search"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => setTyped(e.target.value)}
           placeholder="키워드·카테고리·뉴스 제목 검색"
           aria-label="사이트 검색"
           autoComplete="off"
